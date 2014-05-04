@@ -1,22 +1,19 @@
 package org.cghr.hc.client.service.idService
-
 import groovy.sql.Sql
 import org.json.simple.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.RestController
 
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-
 /**
  * Created by ravitej on 8/4/14.
  */
 
-@Controller
+@RestController
 @RequestMapping("/IDService/enum")
 class IDService {
 
@@ -57,7 +54,6 @@ class IDService {
     }
 
     @RequestMapping(value = "/area/{areaId}/house", produces = "application/json")
-    @ResponseBody
     String getNextHouseId(HttpServletRequest request, HttpServletResponse response,
                           @PathVariable("areaId") long areaId) {
 
@@ -67,7 +63,6 @@ class IDService {
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household", produces = "application/json")
-    @ResponseBody
     String getNextHouseholdId(HttpServletRequest request, HttpServletResponse response,
                               @PathVariable("houseId") long houseId) {
 
@@ -78,7 +73,6 @@ class IDService {
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/visit", produces = "application/json")
-    @ResponseBody
     String getNextVisit(HttpServletRequest request, HttpServletResponse response,
                         @PathVariable("householdId") long householdId) {
 
@@ -95,7 +89,7 @@ class IDService {
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/member", produces = "application/json")
-    @ResponseBody
+    
     String getNextMember(HttpServletRequest request, HttpServletResponse response,
                          @PathVariable("householdId") long householdId) {
 
@@ -105,7 +99,6 @@ class IDService {
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/death", produces = "application/json")
-    @ResponseBody
     String getNextDeath(HttpServletRequest request, HttpServletResponse response,
                         @PathVariable("householdId") long householdId) {
 
@@ -115,7 +108,6 @@ class IDService {
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/hosp", produces = "application/json")
-    @ResponseBody
     String getNextHosp(HttpServletRequest request, HttpServletResponse response,
                        @PathVariable("householdId") long householdId) {
 
@@ -124,7 +116,6 @@ class IDService {
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/head", produces = "application/json")
-    @ResponseBody
     String getNextHead(HttpServletRequest request, HttpServletResponse response,
                        @PathVariable("householdId") long householdId) {
 

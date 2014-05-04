@@ -1,20 +1,14 @@
 package org.cghr.hc.client.service.grid
-
 import com.github.jknack.handlebars.Handlebars
 import org.cghr.commons.db.DbAccess
 import org.cghr.dataViewModel.DataModelUtil
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.ResponseBody
-
+import org.springframework.web.bind.annotation.*
 /**
  * Created by ravitej on 8/4/14.
  */
 
-@Controller
+@RestController
 @RequestMapping("/GridService")
 class GridService {
 
@@ -27,7 +21,6 @@ class GridService {
 
     //Areas
     @RequestMapping(value = "/{context}/area", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
     String getAreas(@PathVariable("context") String context) {
 
         Map data = [nextState: context + ".areaDetail.house", entityId: 'areaId', refs: [:]]
@@ -39,7 +32,6 @@ class GridService {
 
     //Houses
     @RequestMapping(value = "/{context}/area/{areaId}/house", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
     String getHouses(@PathVariable("context") String context, @PathVariable("areaId") Integer areaId) {
 
         Map data
@@ -58,7 +50,7 @@ class GridService {
 
     //Households
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
+    
     String getHouseholds(
             @PathVariable("context") String context,
             @PathVariable("areaId") Integer areaId, @PathVariable("houseId") Integer houseId) {
@@ -76,7 +68,7 @@ class GridService {
 
     //Head of the Household
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/head", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
+    
     String getHead(@PathVariable("context") String context,
                    @PathVariable("areaId") Integer areaId,
                    @PathVariable("houseId") Integer houseId, @PathVariable("householdId") Integer householdId) {
@@ -90,7 +82,7 @@ class GridService {
 
     //Members
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/member", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
+    
     String getMembers(@PathVariable("context") String context,
                       @PathVariable("areaId") Integer areaId,
                       @PathVariable("houseId") Integer houseId, @PathVariable("householdId") Integer householdId) {
@@ -111,7 +103,7 @@ class GridService {
     }
     //FFQ
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/ffq", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
+    
     String getFFQ(@PathVariable("context") String context,
                   @PathVariable("areaId") Integer areaId,
                   @PathVariable("houseId") Integer houseId, @PathVariable("householdId") Integer householdId) {
@@ -125,7 +117,7 @@ class GridService {
 
     // Visit
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/visit", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
+    
     String getEnumVisits(@PathVariable("context") String context, @PathVariable("householdId") Integer householdId) {
 
         if (context == 'enum')
@@ -137,7 +129,7 @@ class GridService {
 
     //Household Deaths
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/death", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
+    
     String getDeaths(@PathVariable("context") String context, @PathVariable("householdId") Integer householdId) {
 
         Map data = [nextState: '', entityId: '']
@@ -149,7 +141,7 @@ class GridService {
 
     //Household Hospitalization
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/hosp", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
+    
     String getHospitalization(
             @PathVariable("context") String context, @PathVariable("householdId") Integer householdId) {
 
@@ -159,7 +151,7 @@ class GridService {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
+    
     String get() {
 
         Map data = [nextState: '', entityId: '']

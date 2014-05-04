@@ -4,4 +4,4 @@ cd cghr-services
 gradle install
 cd ..
 cd hc/services
-gradle jettyRun
+gradle  runJetty8

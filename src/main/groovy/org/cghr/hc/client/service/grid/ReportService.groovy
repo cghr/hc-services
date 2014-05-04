@@ -1,18 +1,12 @@
 package org.cghr.hc.client.service.grid
-
 import org.cghr.commons.db.DbAccess
 import org.cghr.dataViewModel.DataModelUtil
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.ResponseBody
-
+import org.springframework.web.bind.annotation.*
 /**
  * Created by ravitej on 8/4/14.
  */
-@Controller
+@RestController
 @RequestMapping("/GridService/report")
 class ReportService {
 
@@ -26,7 +20,6 @@ class ReportService {
     def sql = ""
 
     @RequestMapping(value = "/{reportId}", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
     String getReport(@PathVariable("reportId") int reportId) {
 
         switch (reportId) {
