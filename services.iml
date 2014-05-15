@@ -12,11 +12,10 @@
       <excludeFolder url="file://$MODULE_DIR$/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
     </content>
+    <orderEntry type="library" name="Clover IDEA Plugin" level="application" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="Gradle: cghr-services-0.1-beta3" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: handlebars-1.3.0" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Gradle: mysql-connector-java-5.1.30" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: tomcat-juli-8.0.5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: tomcat-jdbc-8.0.5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: groovy-all-2.2.0" level="project" />
@@ -50,6 +49,8 @@
     <orderEntry type="library" scope="PROVIDED" name="Gradle: antlr4-runtime-4.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: rhino-1.7R4" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: slf4j-api-1.6.4" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Gradle: cghr-services-0.1-beta1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Gradle: h2-1.4.177" level="project" />
   </component>
 </module>
 

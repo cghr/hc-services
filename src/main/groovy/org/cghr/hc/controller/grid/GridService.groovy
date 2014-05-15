@@ -1,9 +1,14 @@
-package org.cghr.hc.client.service.grid
+package org.cghr.hc.controller.grid
+
 import com.github.jknack.handlebars.Handlebars
 import org.cghr.commons.db.DbAccess
 import org.cghr.dataViewModel.DataModelUtil
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RestController
+
 /**
  * Created by ravitej on 8/4/14.
  */
@@ -50,7 +55,7 @@ class GridService {
 
     //Households
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household", method = RequestMethod.GET, produces = "application/json")
-    
+
     String getHouseholds(
             @PathVariable("context") String context,
             @PathVariable("areaId") Integer areaId, @PathVariable("houseId") Integer houseId) {
@@ -68,7 +73,7 @@ class GridService {
 
     //Head of the Household
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/head", method = RequestMethod.GET, produces = "application/json")
-    
+
     String getHead(@PathVariable("context") String context,
                    @PathVariable("areaId") Integer areaId,
                    @PathVariable("houseId") Integer houseId, @PathVariable("householdId") Integer householdId) {
@@ -82,7 +87,7 @@ class GridService {
 
     //Members
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/member", method = RequestMethod.GET, produces = "application/json")
-    
+
     String getMembers(@PathVariable("context") String context,
                       @PathVariable("areaId") Integer areaId,
                       @PathVariable("houseId") Integer houseId, @PathVariable("householdId") Integer householdId) {
@@ -97,13 +102,16 @@ class GridService {
 
 
         String link = createLink(data)
-        sql = "select $link,name,gender,age from member where  householdId=?".toString()
+        if (context == 'hc')
+            sql = "select $link,name,gender,age from member where  householdId=? and age>29 and age<71".toString()
+        else
+            sql = "select $link,name,gender,age from member where  householdId=?".toString()
 
         return constructJsonResponse(sql, [householdId])
     }
     //FFQ
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/ffq", method = RequestMethod.GET, produces = "application/json")
-    
+
     String getFFQ(@PathVariable("context") String context,
                   @PathVariable("areaId") Integer areaId,
                   @PathVariable("houseId") Integer houseId, @PathVariable("householdId") Integer householdId) {
@@ -117,7 +125,7 @@ class GridService {
 
     // Visit
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/visit", method = RequestMethod.GET, produces = "application/json")
-    
+
     String getEnumVisits(@PathVariable("context") String context, @PathVariable("householdId") Integer householdId) {
 
         if (context == 'enum')
@@ -129,7 +137,7 @@ class GridService {
 
     //Household Deaths
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/death", method = RequestMethod.GET, produces = "application/json")
-    
+
     String getDeaths(@PathVariable("context") String context, @PathVariable("householdId") Integer householdId) {
 
         Map data = [nextState: '', entityId: '']
@@ -141,7 +149,7 @@ class GridService {
 
     //Household Hospitalization
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/hosp", method = RequestMethod.GET, produces = "application/json")
-    
+
     String getHospitalization(
             @PathVariable("context") String context, @PathVariable("householdId") Integer householdId) {
 
@@ -151,7 +159,7 @@ class GridService {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET, produces = "application/json")
-    
+
     String get() {
 
         Map data = [nextState: '', entityId: '']

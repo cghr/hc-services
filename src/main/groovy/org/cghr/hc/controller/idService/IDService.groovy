@@ -1,4 +1,4 @@
-package org.cghr.hc.client.service.idService
+package org.cghr.hc.controller.idService
 import groovy.sql.Sql
 import org.json.simple.JSONObject
 import org.springframework.beans.factory.annotation.Autowired

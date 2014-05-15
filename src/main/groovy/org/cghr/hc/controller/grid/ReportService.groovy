@@ -1,8 +1,13 @@
-package org.cghr.hc.client.service.grid
+package org.cghr.hc.controller.grid
+
 import org.cghr.commons.db.DbAccess
 import org.cghr.dataViewModel.DataModelUtil
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RestController
+
 /**
  * Created by ravitej on 8/4/14.
  */
