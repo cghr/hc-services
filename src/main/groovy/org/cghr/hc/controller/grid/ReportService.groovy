@@ -48,10 +48,10 @@ class ReportService {
     String constructJsonResponse(String sql, List params) {
 
 
-        def filtersArray = dbAccess.getColumnLabels(sql, params).collect {
+        def filtersArray = dbAccess.columns(sql, params).collect {
             '#text_filter'
         }
-        def sortingArray = dbAccess.getColumnLabels(sql, params).collect {
+        def sortingArray = dbAccess.columns(sql, params).collect {
             'str'
         }
 

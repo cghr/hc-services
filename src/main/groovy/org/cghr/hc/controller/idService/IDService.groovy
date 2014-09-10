@@ -35,7 +35,6 @@ class IDService {
 
         Map row = gSql.firstRow(sql, params);
         Long id = (row.id==null) ? 0 : row.id;
-        println 'id '+id;
         def nextId = ""
 
         if (id == 0) {
@@ -66,6 +65,7 @@ class IDService {
     String getNextHouseholdId(HttpServletRequest request, HttpServletResponse response,
                               @PathVariable("houseId") long houseId) {
 
+
         sql = "SELECT MAX(householdId) id FROM household WHERE  houseId=?";
         generateNextId(sql, [houseId], request, "household")
 
@@ -74,14 +74,21 @@ class IDService {
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/visit", produces = "application/json")
     String getNextVisit(HttpServletRequest request, HttpServletResponse response,
-                        @PathVariable("householdId") long householdId) {
+                        @PathVariable("householdId") long householdId,@PathVariable("houseId") long houseId,@PathVariable("areaId") long areaId) {
 
         //Save Id of the Household if doesn't exists
         //int householdExists=jdbcTemplate.queryForObject("select count(*) from visit where householdId=?",new Object[]{householdId},Integer.class);
         int householdExists = gSql.firstRow("select count(*) count from enumVisit where householdId=?", [householdId]).count
 
-        if (householdExists == 0)
-            gSql.execute("INSERT INTO household(householdId) values(?)", [householdId])
+        println 'householdExists '+householdExists
+        if (householdExists == 0){
+            gSql.execute("INSERT INTO household(householdId,houseId,areaId) values(?,?,?)", [householdId,houseId,areaId])
+            println 'created new household'
+        }
+
+
+        println "Households"
+        println(gSql.rows("select * from household"))
 
         sql = "SELECT MAX(id) id FROM enumVisit WHERE householdId=? ";
         generateNextId(sql, [householdId], request, "visit")

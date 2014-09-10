@@ -66,7 +66,9 @@ class GridService {
         else
             data = [nextState: context + '.householdDetail.member', entityId: 'householdId', refs: [areaId: areaId, houseId: houseId]]
         String link = createLink(data)
-        sql = "select $link,mobile1,mobile2 from household where houseId=?".toString()
+
+        //sql = "select $link,b.mobile1,b.mobile2 from household a left join hhContact b on a.householdId=b.householdId where houseId=?".toString()
+        sql = "select $link,totalMembers `Total Members` from household    where houseId=?".toString()
 
         return constructJsonResponse(sql, [houseId])
     }
@@ -80,7 +82,7 @@ class GridService {
 
         Map data = [nextState: context + '.memberDetail', entityId: 'memberId', refs: [areaId: areaId, houseId: houseId, householdId: householdId]]
         String link = createLink(data)
-        sql = "select $link,name,gender,age from member where  householdId=? and relationship='self'".toString()
+        sql = "select $link,name,gender,CONCAT(age_value,age_unit)age from member where  householdId=? and relationship='self'".toString()
 
         return constructJsonResponse(sql, [householdId])
     }
@@ -98,14 +100,19 @@ class GridService {
         else
             data = [nextState: context + '.memberDetail.basicInf', entityId: 'memberId', refs: [areaId: areaId, houseId: houseId, householdId: householdId]]
 
-
+        String consentPhoto = createLink([columnName: 'consent', nextState: 'cam', entityId: 'memberId', refs: [areaId: areaId, houseId: houseId, householdId: householdId, category: 'memberConsent', imgSuffix: 'consent']])
+        String memberPhoto = createLink([columnName: 'photo', nextState: 'cam', entityId: 'memberId', refs: [areaId: areaId, houseId: houseId, householdId: householdId, category: 'memberPhoto', imgSuffix: 'photo']])
 
 
         String link = createLink(data)
+
         if (context == 'hc')
-            sql = "select $link,name,gender,age from member where  householdId=? and age>29 and age<71".toString()
+        //sql = "select $link,name,gender,age,CAST(CONCAT('<a ui-sref=\"cam({ memberId:',memberId,',areaId:$areaId,houseId:$houseId,householdId:$householdId,category:',',,'memberConsent,','imgSuffix:','consent})\">consent</a>') AS CHAR) consent from member where  householdId=? and age>29 and age<71".toString()
+            sql = "select $link,name,gender,CONCAT(age_value,age_unit) age,CAST(CONCAT('<a href=\"#/hc/area/$areaId/house/$houseId/household/$householdId/member/',memberId,'/cam/memberConsent/consent\">','Consent</a>') AS CHAR) consent,CAST(CONCAT('<a href=\"#/hc/area/$areaId/house/$houseId/household/$householdId/member/',memberId,'/cam/memberPhoto/photo\">','Photo</a>') AS CHAR) photo  from member where  householdId=? and age_value>29 and age_value<71 and age_unit='Years'".toString()
+        else if (context == 'resamp')
+            sql = "select $link,name,gender,CONCAT(age_value,age_unit) age from member where  householdId=? and age_value>29 and age_value<71 and age_unit='Years'".toString()
         else
-            sql = "select $link,name,gender,age from member where  householdId=?".toString()
+            sql = "select $link,name,gender,CONCAT(age_value,age_unit) age from member where  householdId=?".toString()
 
         return constructJsonResponse(sql, [householdId])
     }
@@ -118,7 +125,7 @@ class GridService {
 
         Map data = [nextState: context + '.ffqDetail.general', entityId: 'memberId', refs: [areaId: areaId, houseId: houseId, householdId: householdId]]
         String link = createLink(data)
-        sql = "select $link,name,gender,age from member where  householdId=?".toString()
+        sql = "select $link,name,gender,concat(age_value,age_unit) age from member where  householdId=? and age_value>29 and age_value<71 and age_unit='Years'".toString()
 
         return constructJsonResponse(sql, [householdId])
     }
@@ -129,9 +136,9 @@ class GridService {
     String getEnumVisits(@PathVariable("context") String context, @PathVariable("householdId") Integer householdId) {
 
         if (context == 'enum')
-            sql = "select id,hhAvailability,time from enumVisit where householdId=? ".toString()
+            sql = "select id,hhAvailability,timelog from enumVisit where householdId=? ".toString()
         else
-            sql = "select id,hhVisit,time from hcVisit where householdId=? ".toString()
+            sql = "select id,hhVisit,timelog from hcVisit where householdId=? ".toString()
         return constructJsonResponse(sql, [householdId])
     }
 
@@ -173,11 +180,11 @@ class GridService {
     String constructJsonResponse(String sql, List params) {
 
 
-        def filtersArray = dbAccess.getColumnLabels(sql, params).split(",").collect {
+        def filtersArray = dbAccess.columns(sql, params).collect {
             "#text_filter"
         }
 
-        def sortingArray = dbAccess.getColumnLabels(sql, params).split(",").collect {
+        def sortingArray = dbAccess.columns(sql, params).collect {
             "str"
         }
 
@@ -189,6 +196,7 @@ class GridService {
 
         Handlebars handlebars = new Handlebars()
         Map entities = contextData.refs
+        String columnName = contextData.columnName == null ? 'id' : contextData.columnName
         List entityList = []
         entities.each { key, value ->
 
@@ -199,9 +207,9 @@ class GridService {
 
         def template = ""
         if (entityList.isEmpty())
-            template = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{entityId}},'})\">',{{entityId}},'</a>') AS CHAR) id".toString()
+            template = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},'})\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName".toString()
         else
-            template = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{entityId}},',$refs })\">',{{entityId}},'</a>') AS CHAR) id".toString()
+            template = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},',$refs })\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName".toString()
 
         def compiledTemplate = handlebars.compileInline(template)
         compiledTemplate.apply(contextData)

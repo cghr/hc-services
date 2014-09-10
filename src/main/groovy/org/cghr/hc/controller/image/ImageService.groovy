@@ -1,6 +1,5 @@
 package org.cghr.hc.controller.image
 
-import org.apache.commons.io.IOUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.PathVariable
@@ -21,19 +20,22 @@ class ImageService {
     @Autowired
     HashMap fileStoreFactory
 
-    @RequestMapping(value = "/{memberId}/{filestore}/{category}", produces = MediaType.IMAGE_PNG_VALUE)
+    @RequestMapping(value = "/{memberId}/{filestore}/{category}/{type}", produces = MediaType.IMAGE_PNG_VALUE)
     byte[] getImage(
             @PathVariable("memberId") String memberId,
             @PathVariable("filestore") String filestore,
-            @PathVariable("category") String category) throws IOException {
+            @PathVariable("category") String category,
+            @PathVariable("type") String type) throws IOException {
 
-        InputStream inputStream = servletContext.getResourceAsStream(getImagePath(memberId, filestore, category))
-        IOUtils.toByteArray(inputStream)
+        File file = new File(getImagePath(memberId, filestore, category, type))
+        file.getBytes()
     }
 
-    String getImagePath(String memberId, String filestore, String category) {
+    String getImagePath(String memberId, String filestore, String category, String type) {
 
-        fileStoreFactory."$filestore"."$category"
+        String path = fileStoreFactory."$filestore"."$category" + '/' + memberId + '_' + type
+        println path
+        path
 
     }
 

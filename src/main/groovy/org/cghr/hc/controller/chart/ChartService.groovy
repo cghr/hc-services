@@ -18,7 +18,7 @@ class ChartService {
     @RequestMapping(value="/pendingDownloads",method = RequestMethod.GET,produces = 'application/json')
     String getPendingDownloads(){
 
-        chartDataModel.getChartDataModel("SELECT username,COUNT(*) downloads FROM outbox  a LEFT JOIN user b ON a.recipient=b.id GROUP BY recipient;",[])
+        chartDataModel.getChartDataModel("SELECT username,COUNT(*) downloads FROM outbox  a LEFT JOIN user b ON a.recipient=b.id WHERE dwnStatus is null GROUP BY recipient",[])
     }
     @RequestMapping(value="/totalProgress",method = RequestMethod.GET,produces = 'application/json')
     String getTotalProgress(){
