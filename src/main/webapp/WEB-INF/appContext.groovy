@@ -21,6 +21,7 @@ import org.cghr.startupTasks.MetaClassEnhancement
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import org.springframework.web.servlet.view.ContentNegotiatingViewResolver
 
 
 beans {
@@ -35,13 +36,23 @@ beans {
 
     context.'component-scan'('base-package': 'org.cghr.hc.controller')
 
+
     mvc.'annotation-driven'()
+
     mvc.'interceptors'() {
         mvc.'mapping'('path': '/api/GridService/**') {
             bean('class': 'org.cghr.security.controller.AuthInterceptor')
         }
     }
-    multiPartResolver(CommonsMultipartResolver)
+
+    contentNegotiatingViewResolver(ContentNegotiatingViewResolver) {
+        defaultContentType = "application/json"
+    }
+    multipartResolver(CommonsMultipartResolver) {
+        maxInMemorySize = 10240
+        maxUploadSize = 1024000000
+        uploadTempDir = "/tmp"
+    }
 
     String userHome = System.getProperty('userHome')
     String appPath = System.getProperty('basePath')
@@ -49,10 +60,11 @@ beans {
     serverBaseUrl(String, server)
 
     //Data Config
-    dataSource(DataSource) {
+    dataSource(DataSource) { bean ->
+        bean.destroyMethod = 'close'
         driverClassName = 'org.h2.Driver'
-        //url = 'jdbc:h2:tcp://localhost/~/hcDemo;database_to_upper=false;mode=mysql'
-        url = 'jdbc:h2:~/hcDemo;database_to_upper=false;mode=mysql'
+        //url = 'jdbc:h2:tcp://localhost/~/hcDemo:9092;database_to_upper=false;mode=mysql'
+        url = 'jdbc:h2:~/hc;database_to_upper=false;mode=mysql;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE'
         username = 'sa'
         password = ''
         initialSize = 5
@@ -74,18 +86,18 @@ beans {
     gSql(Sql, dataSource = dataSource)
     dbAccess(DbAccess, gSql = gSql)
     // Entities
-    dataStoreFactory(HashMap, [user: 'id', team: 'id', userlog: 'id', authtoken: 'id', datachangelog: 'id', filechangelog: 'id', area: 'areaId', house: 'houseId', household: 'householdId', hhContact: 'householdId', member: 'memberId', hcMember: 'memberId', enumVisit: 'id', hcVisit: 'id', householdCommonQs: 'householdId', householdFoodItems: 'householdId', hospInf: 'householdId', deathInf: 'householdId', householdHosp: 'id', householdDeath: 'id', memberPhoto: 'memberId', memberBp1: 'memberId', memberBp2: 'memberId', memberTobaccoAlcohol: 'memberId', memberAlcoholFreq: 'memberId', memberAlcohol2: 'memberId', memberPersonalMedicalHistory: 'memberId', memberReproductiveHistory: 'memberId', memberGeneralMood: 'memberId', memberFamilyMedicalHistory: 'memberId', memberFmhDisease: 'memberId', memberPhysicalActivities: 'memberId', ffqGeneral: 'memberId', ffqBeverages: 'memberId', ffqCereals: 'memberId', ffqPulses: 'memberId', ffqVeg: 'memberId', ffqRaw: 'memberId', ffqFruits: 'memberId', ffqJuice: 'memberId', ffqNonVeg: 'memberId', ffqSweets: 'memberId', ffqSpiceMix: 'memberId', ffqSnacks: 'memberId', ffqSalt: 'memberId', ffqFoodAdditives: 'memberId', resampling: 'memberId', outbox: 'id', inbox: 'id', invitationCard: 'memberId', resampAssign: 'memberId', memberImage: 'memberId'])
+    dataStoreFactory(HashMap, [user: 'id', team: 'id', teamuser: 'id', assignment: 'id', userlog: 'id', authtoken: 'id', datachangelog: 'id', filechangelog: 'id', area: 'areaId', house: 'houseId', household: 'householdId', hhContact: 'householdId', member: 'memberId', hcMember: 'memberId', enumVisit: 'id', hcVisit: 'id', state: 'stateId', district: 'districtId', householdCommonQs: 'householdId', householdFoodItems: 'householdId', hospInf: 'householdId', deathInf: 'householdId', householdHosp: 'id', householdDeath: 'id', memberPhoto: 'memberId', memberBp1: 'memberId', memberBp2: 'memberId', memberTobaccoAlcohol: 'memberId', memberAlcoholFreq: 'memberId', memberAlcohol2: 'memberId', memberPersonalMedicalHistory: 'memberId', memberReproductiveHistory: 'memberId', memberGeneralMood: 'memberId', memberFamilyMedicalHistory: 'memberId', memberFmhDisease: 'memberId', memberPhysicalActivities: 'memberId', ffqGeneral: 'memberId', ffqBeverages: 'memberId', ffqCereals: 'memberId', ffqPulses: 'memberId', ffqVeg: 'memberId', ffqRaw: 'memberId', ffqFruits: 'memberId', ffqJuice: 'memberId', ffqNonVeg: 'memberId', ffqSweets: 'memberId', ffqSpiceMix: 'memberId', ffqSnacks: 'memberId', ffqSalt: 'memberId', ffqFoodAdditives: 'memberId', resampling: 'memberId', outbox: 'id', inbox: 'id', invitationCard: 'memberId', resampAssign: 'memberId', memberImage: 'memberId'])
     dbStore(DbStore, gSql = gSql, dataStoreFactory = dataStoreFactory)
 
     // File Store Config
     fileStoreFactory(HashMap,
             [memberImage: [
-                    memberConsent: userHome + "hcDemo/repo/images/consent",
-                    memberPhotoId: userHome + "hcDemo/repo/images/photoId",
-                    memberPhoto: userHome + "hcDemo/repo/images/photo"
+                    memberConsent     : userHome + "hcDemo/repo/images/consent",
+                    memberPhotoId     : userHome + "hcDemo/repo/images/photoId",
+                    memberPhoto       : userHome + "hcDemo/repo/images/photo",
+                    memberPhotoConsent: userHome + "hcDemo/repo/images/photoConsent"
             ]])
     fileSystemStore(FileSystemStore, fileStoreFactory = fileStoreFactory, dbStore = dbStore)
-
 
     //Todo Data Model for reports
     transformer(DhtmlxGridModelTransformer, dbAccess = dbAccess)
@@ -98,12 +110,11 @@ beans {
         readTimeout = 3000
         connectTimeout = 3000
     }
-    restTemplate(RestTemplate,httpRequestFactory)
+    restTemplate(RestTemplate, httpRequestFactory)
     onlineAuthService(OnlineAuthService, serverAuthUrl = serverAuthUrl, restTemplate = restTemplate)
     userService(UserService, dbAccess = dbAccess, dbStore = dbStore, onlineAuthService = onlineAuthService)
     postAuth(PostAuth, userService = userService)
     auth(Auth)
-
 
     //Startup Tasks
     metaClassEnhancement(MetaClassEnhancement)
@@ -111,6 +122,7 @@ beans {
     dirCreator(DirCreator, [
             userHome + 'hcDemo/repo/images/consent',
             userHome + 'hcDemo/repo/images/photo',
+            userHome + 'hcDemo/repo/images/photoConsent',
             userHome + 'hcDemo/repo/images/photoId'
     ])
 
@@ -124,7 +136,7 @@ beans {
             uploadPath = 'api/data/dataStoreBatchService',
             awakeFileManagerPath = 'app/AwakeFileManager',
             fileStoreFactory = fileStoreFactory,
-            userHome=userHome,
+            userHome = userHome,
             syncUtil = syncUtil)
     agentProvider(AgentProvider, agentServiceProvider = agentServiceProvider)
     syncRunner(SyncRunner, agentProvider = agentProvider)
@@ -135,4 +147,9 @@ beans {
     // Maintenance Tasks
     cleanup(CleanUp, dbAccess = dbAccess, excludedEntities = 'user')
 
+    //Todo JsonSchema Path
+    devJsonSchemaPath(String, userHome + 'apps/<appName>/ui/src/assets/jsonSchema')
+    prodJsonSchemaPath(String, appPath + 'assets/jsonSchema')
+
+    ipAddressPattern(String, "192.168")
 }

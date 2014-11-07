@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-import javax.servlet.ServletContext
-
 /**
  * Created by ravitej on 15/5/14.
  */
@@ -15,8 +13,6 @@ import javax.servlet.ServletContext
 @RequestMapping("/image")
 class ImageService {
 
-    @Autowired
-    ServletContext servletContext
     @Autowired
     HashMap fileStoreFactory
 
@@ -33,9 +29,7 @@ class ImageService {
 
     String getImagePath(String memberId, String filestore, String category, String type) {
 
-        String path = fileStoreFactory."$filestore"."$category" + '/' + memberId + '_' + type
-        println path
-        path
+        fileStoreFactory."$filestore"."$category" + '/' + memberId + '_' + type
 
     }
 

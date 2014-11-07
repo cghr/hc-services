@@ -25,7 +25,7 @@
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <init-param>
             <param-name>contextClass</param-name>
-            <param-value>org.cghr.context.WebGenricGroovyApplicationContext</param-value>
+            <param-value>org.springframework.web.context.support.GroovyWebApplicationContext</param-value>
         </init-param>
         <init-param>
             <param-name>contextConfigLocation</param-name>
@@ -41,22 +41,22 @@
     <!--Ends -->
 
     <!-- Awake File Manager -->
-    <servlet>
-        <servlet-name>AwakeFileManager</servlet-name>
-        <servlet-class>org.awakefw.file.servlet.AwakeFileManager</servlet-class>
-        <load-on-startup>2</load-on-startup>
+    <!--<servlet>-->
+        <!--<servlet-name>AwakeFileManager</servlet-name>-->
+        <!--<servlet-class>org.awakefw.file.servlet.AwakeFileManager</servlet-class>-->
+        <!--<load-on-startup>2</load-on-startup>-->
 
-        <init-param>
-            <param-name>awakeFileConfiguratorClassName</param-name>
-            <param-value>org.cghr.awakeFile.CghrAwakeFileConfigurator</param-value>
-        </init-param>
+        <!--<init-param>-->
+            <!--<param-name>awakeFileConfiguratorClassName</param-name>-->
+            <!--<param-value>org.cghr.awakeFile.CghrAwakeFileConfigurator</param-value>-->
+        <!--</init-param>-->
 
-    </servlet>
+    <!--</servlet>-->
 
-    <servlet-mapping>
-        <servlet-name>AwakeFileManager</servlet-name>
-        <url-pattern>/AwakeFileManager</url-pattern>
-    </servlet-mapping>
+    <!--<servlet-mapping>-->
+        <!--<servlet-name>AwakeFileManager</servlet-name>-->
+        <!--<url-pattern>/AwakeFileManager</url-pattern>-->
+    <!--</servlet-mapping>-->
 
 
     <welcome-file-list>

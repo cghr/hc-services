@@ -1,14 +1,13 @@
 package org.cghr.hc.controller.idService
-import groovy.sql.Sql
-import org.json.simple.JSONObject
+
+import org.cghr.commons.db.DbAccess
+import org.cghr.commons.db.DbStore
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-import javax.servlet.http.Cookie
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 /**
  * Created by ravitej on 8/4/14.
  */
@@ -17,173 +16,103 @@ import javax.servlet.http.HttpServletResponse
 @RequestMapping("/IDService/enum")
 class IDService {
 
-    def sql = ""
-    final def nextHouse = "001"
-    final def nextHousehold = "01"
-    final def nextMember = "01"
-    final def nextDeath = "01"
-    final def nextHosp = "01"
-    final def nextVisit = "1"
-    def idPrefix = ""
-    JSONObject idObject = new JSONObject();
-
     @Autowired
-    Sql gSql
+    DbAccess dbAccess
+    @Autowired
+    DbStore dbStore
 
+    Map contextConfig = [
+            house    : [id: 'houseId', table: 'house', parentId: 'areaId', nextId: "001"],
+            household: [id: "householdId", table: 'household', parentId: 'houseId', nextId: "01"],
+            member   : [id: 'memberId', table: 'member', parentId: 'householdId', nextId: "01"],
+            hosp     : [id: 'id', table: 'householdHosp', parentId: 'householdId', nextId: "01"],
+            death    : [id: 'id', table: 'householdDeath', parentId: 'householdId', nextId: "01"],
+            visit    : [id: 'id', table: 'householdDeath', parentId: 'householdId', nextId: "1"]
+    ]
 
-    String generateNextId(String sql, List params, HttpServletRequest request, String context) {
-
-        Map row = gSql.firstRow(sql, params);
-        Long id = (row.id==null) ? 0 : row.id;
-        def nextId = ""
-
-        if (id == 0) {
-
-            if (context == 'house') idPrefix = getUserIdFromRequest(request) + params[0]
-            else idPrefix = params[0] + ""
-
-            nextId = constructIdFromRequest(request, context, idPrefix);
-        } else
-            nextId = (++id) + "";
-
-        idObject.put("id", nextId);
-
-        return idObject.toJSONString();
-
-    }
 
     @RequestMapping(value = "/area/{areaId}/house", produces = "application/json")
-    String getNextHouseId(HttpServletRequest request, HttpServletResponse response,
-                          @PathVariable("areaId") long areaId) {
+    String getNextHouseId(@CookieValue("userid") String userid, @PathVariable("areaId") String areaId) {
 
-        sql = "SELECT MAX(houseId) id FROM house WHERE areaId=?";
-        generateNextId(sql, [areaId], request, "house")
+        getNextId(areaId, userid, "house")
 
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household", produces = "application/json")
-    String getNextHouseholdId(HttpServletRequest request, HttpServletResponse response,
-                              @PathVariable("houseId") long houseId) {
+    String getNextHouseholdId(@CookieValue("userid") String userid, @PathVariable("houseId") String houseId) {
 
 
-        sql = "SELECT MAX(householdId) id FROM household WHERE  houseId=?";
-        generateNextId(sql, [houseId], request, "household")
+        getNextId(houseId, userid, "household")
 
 
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/visit", produces = "application/json")
-    String getNextVisit(HttpServletRequest request, HttpServletResponse response,
-                        @PathVariable("householdId") long householdId,@PathVariable("houseId") long houseId,@PathVariable("areaId") long areaId) {
+    String getNextVisit(
+            @CookieValue("userid") String userid,
+            @PathVariable("householdId") String householdId,
+            @PathVariable("houseId") String houseId, @PathVariable("areaId") String areaId) {
 
-        //Save Id of the Household if doesn't exists
-        //int householdExists=jdbcTemplate.queryForObject("select count(*) from visit where householdId=?",new Object[]{householdId},Integer.class);
-        int householdExists = gSql.firstRow("select count(*) count from enumVisit where householdId=?", [householdId]).count
+        int visits = dbAccess.firstRow("select count(*) count from enumVisit where householdId=?", [householdId]).count
+        if (visits == 0)
+            dbStore.execute("INSERT INTO household(householdId,houseId,areaId) values(?,?,?)", [householdId, houseId, areaId])
 
-        println 'householdExists '+householdExists
-        if (householdExists == 0){
-            gSql.execute("INSERT INTO household(householdId,houseId,areaId) values(?,?,?)", [householdId,houseId,areaId])
-            println 'created new household'
-        }
-
-
-        println "Households"
-        println(gSql.rows("select * from household"))
-
-        sql = "SELECT MAX(id) id FROM enumVisit WHERE householdId=? ";
-        generateNextId(sql, [householdId], request, "visit")
+        getNextId(householdId, userid, "visit")
 
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/member", produces = "application/json")
-    
-    String getNextMember(HttpServletRequest request, HttpServletResponse response,
-                         @PathVariable("householdId") long householdId) {
 
-        sql = "SELECT MAX(memberId) id FROM member WHERE householdId=?";
-        generateNextId(sql, [householdId], request, "member")
+    String getNextMember(@CookieValue("userid") String userid,
+                         @PathVariable("householdId") String householdId) {
+
+        getNextId(householdId, userid, "member")
 
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/death", produces = "application/json")
-    String getNextDeath(HttpServletRequest request, HttpServletResponse response,
-                        @PathVariable("householdId") long householdId) {
+    String getNextDeath(@CookieValue("userid") String userid,
+                        @PathVariable("householdId") String householdId) {
 
-        sql = "SELECT MAX(id) id FROM householdDeath WHERE householdId=? ";
-        generateNextId(sql, [householdId], request, "death")
+        getNextId(householdId, userid, "death")
 
     }
 
     @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/hosp", produces = "application/json")
-    String getNextHosp(HttpServletRequest request, HttpServletResponse response,
-                       @PathVariable("householdId") long householdId) {
+    String getNextHosp(@CookieValue("userid") String userid,
+                       @PathVariable("householdId") String householdId) {
 
-        sql = "SELECT MAX(id) id FROM householdHosp WHERE householdId=?";
-        generateNextId(sql, [householdId], request, "hosp")
-    }
-
-    @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/head", produces = "application/json")
-    String getNextHead(HttpServletRequest request, HttpServletResponse response,
-                       @PathVariable("householdId") long householdId) {
-
-        sql = "SELECT MAX(memberId) id FROM member WHERE householdId=? ";
-        generateNextId(sql, [householdId], request, "member")
-
+        getNextId(householdId, userid, "hosp")
     }
 
 
-    String getUserIdFromRequest(HttpServletRequest request) {
+    String getNextId(String refId, String userid, String context) {
 
-        Cookie[] cookies = request.getCookies();
+        Map config = contextConfig.get(context)
+        String sql = "SELECT MAX($config.id) FROM $config.table WHERE $config.parentId=?"
+        generateNextId(sql, refId, userid, context)
 
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("userid"))
-                return cookie.getValue();
+    }
 
+    String generateNextId(String sql, String refId, String userid, String context) {
+
+        Map row = dbAccess.firstRow(sql, [refId])
+        String nextId = resolveNextId(row, context, userid, refId)
+
+        return [id: nextId].toJson()
+
+    }
+
+    String resolveNextId(Map row, String context, String userid, String refId) {
+
+        if (row.isEmpty()) {
+            String idPrefix = (context == 'house') ? (userid + refId) : refId
+            return idPrefix + (contextConfig."$context".nextId)
+        } else {
+            Long id = (row.id).toLong()
+            return (++id).toString()
         }
-
-
-
-        return null;
     }
 
-    String constructIdFromRequest(HttpServletRequest request, String type, String idPrefix) {
 
-
-        def nexItem = ""
-        switch (type) {
-
-            case "house":
-                nexItem = nextHouse;
-                break;
-
-            case "household":
-                nexItem = nextHousehold;
-                break;
-
-            case "member":
-                nexItem = nextMember;
-                break;
-
-            case "hosp":
-                nexItem = nextHosp;
-                break;
-
-            case "death":
-                nexItem = nextDeath
-                break;
-
-            case "visit":
-                nexItem = nextVisit
-                break;
-
-            default:
-                return null;
-                break;
-
-        }
-        return idPrefix + nexItem
-
-
-    }
 }
