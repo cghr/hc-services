@@ -3,10 +3,7 @@ package org.cghr.hc.controller.idService
 import org.cghr.commons.db.DbAccess
 import org.cghr.commons.db.DbStore
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.CookieValue
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 /**
  * Created by ravitej on 8/4/14.
@@ -31,7 +28,7 @@ class IDService {
     ]
 
 
-    @RequestMapping(value = "/area/{areaId}/house", produces = "application/json")
+    @RequestMapping(value = "/area/{areaId}/house", method = RequestMethod.GET, produces = "application/json")
     String getNextHouseId(@CookieValue("userid") String userid, @PathVariable("areaId") String areaId) {
 
         getNextId(areaId, userid, "house")
@@ -89,7 +86,7 @@ class IDService {
     String getNextId(String refId, String userid, String context) {
 
         Map config = contextConfig.get(context)
-        String sql = "SELECT MAX($config.id) FROM $config.table WHERE $config.parentId=?"
+        String sql = "SELECT MAX($config.id) id FROM $config.table WHERE $config.parentId=?"
         generateNextId(sql, refId, userid, context)
 
     }
@@ -105,7 +102,7 @@ class IDService {
 
     String resolveNextId(Map row, String context, String userid, String refId) {
 
-        if (row.isEmpty()) {
+        if (!row.id) {
             String idPrefix = (context == 'house') ? (userid + refId) : refId
             return idPrefix + (contextConfig."$context".nextId)
         } else {

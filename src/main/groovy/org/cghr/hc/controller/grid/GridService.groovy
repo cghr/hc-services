@@ -72,17 +72,7 @@ class GridService {
         return constructJsonResponse(sql, [houseId])
     }
 
-    @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/head", produces = "application/json")
-    String getHead(@PathVariable("context") String context,
-                   @PathVariable("areaId") Integer areaId,
-                   @PathVariable("houseId") Integer houseId, @PathVariable("householdId") String householdId) {
 
-        Map data = [nextState: context + '.memberDetail', entityId: 'memberId', refs: [areaId: areaId, houseId: houseId, householdId: householdId]]
-        String link = createLink(data)
-        sql = "select $link,name,gender,CONCAT(age_value,age_unit)age from member where  householdId=? and relationship='self'".toString()
-
-        return constructJsonResponse(sql, [householdId])
-    }
 
     //Members
     @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/member", produces = "application/json")
@@ -164,15 +154,7 @@ class GridService {
         return constructJsonResponse(sql, [householdId])
     }
 
-    @RequestMapping(value = "/", produces = "application/json")
-    String get() {
 
-        Map data = [nextState: '', entityId: '']
-        String link = createLink(data)
-        sql = "select $link from ".toString()
-
-        return constructJsonResponse(sql, [])
-    }
 
     // Creating a Json from sql Query
     String constructJsonResponse(String sql, List params) {
@@ -192,8 +174,11 @@ class GridService {
 
         Map entities = contextData.refs
         String columnName = contextData.columnName == null ? 'id' : contextData.columnName
-
-        String refs = gson.toJson(entities) - '{' - '}'
+        List entityList = []
+        entities.each { k, v ->
+            entityList << "$k" + ":" + "$v".toString()
+        }
+        String refs = entityList.join(",")
 
         String template = ""
         if (refs.isEmpty())
