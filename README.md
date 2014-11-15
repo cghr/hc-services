@@ -3,3 +3,9 @@ HC-Services  [![Build Status](https://travis-ci.org/cghr/hc-services.png?branch=
 
 
 A Web  Services module for hc-ui
+
+Includes
+
+* GridService
+* ReportService
+* IDService
