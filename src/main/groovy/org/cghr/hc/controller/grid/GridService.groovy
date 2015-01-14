@@ -1,14 +1,12 @@
 package org.cghr.hc.controller.grid
 
-import com.github.jknack.handlebars.Handlebars
 import com.google.gson.Gson
+import groovy.text.SimpleTemplateEngine
 import org.cghr.commons.db.DbAccess
-import org.cghr.dataViewModel.DataModelUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-
 /**
  * Created by ravitej on 8/4/14.
  */
@@ -18,13 +16,11 @@ import org.springframework.web.bind.annotation.RestController
 class GridService {
 
     @Autowired
-    DataModelUtil dataModelUtil
-    @Autowired
     DbAccess dbAccess
 
     String sql = ""
 
-    @RequestMapping(value = "/{context}/area", produces = "application/json")
+    @RequestMapping("/{context}/area")
     String getAreas(@PathVariable("context") String context) {
 
         Map data = [nextState: context + ".areaDetail.house", entityId: 'areaId', refs: [:]]
@@ -34,7 +30,7 @@ class GridService {
         return constructJsonResponse(sql, [])
     }
 
-    @RequestMapping(value = "/{context}/area/{areaId}/house", produces = "application/json")
+    @RequestMapping("/{context}/area/{areaId}/house")
     String getHouses(@PathVariable("context") String context, @PathVariable("areaId") Integer areaId) {
 
         String nextState = (context == 'enum') ? 'basicInf' : 'household'
@@ -46,7 +42,7 @@ class GridService {
         return constructJsonResponse(sql, [areaId])
     }
 
-    @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household", produces = "application/json")
+    @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household")
     String getHouseholds(
             @PathVariable("context") String context,
             @PathVariable("areaId") Integer areaId, @PathVariable("houseId") Integer houseId) {
@@ -72,10 +68,8 @@ class GridService {
         return constructJsonResponse(sql, [houseId])
     }
 
-
-
     //Members
-    @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/member", produces = "application/json")
+    @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/member")
     String getMembers(@PathVariable("context") String context,
                       @PathVariable("areaId") Integer areaId,
                       @PathVariable("houseId") Integer houseId, @PathVariable("householdId") String householdId) {
@@ -90,9 +84,7 @@ class GridService {
         String memberPhoto = createLink([columnName: 'photo', nextState: 'cam', entityId: 'memberId', refs: [areaId: areaId, houseId: houseId, householdId: householdId, category: 'memberPhoto', imgSuffix: 'photo']])
 
 
-        println 'before link creation'
         String link = createLink(data)
-        println 'link created ' + link
 
         if (context == 'hc')
         //sql = "select $link,name,gender,age,CAST(CONCAT('<a ui-sref=\"cam({ memberId:',memberId,',areaId:$areaId,houseId:$houseId,householdId:$householdId,category:',',,'memberConsent,','imgSuffix:','consent})\">consent</a>') AS CHAR) consent from member where  householdId=? and age>29 and age<71".toString()
@@ -102,11 +94,10 @@ class GridService {
         else
             sql = "select memberId,name,gender,CONCAT(age_value,age_unit) age from member where  householdId=?".toString()
 
-        println 'before generating response'
         return constructJsonResponse(sql, [householdId])
     }
     //FFQ
-    @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/ffq", produces = "application/json")
+    @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/ffq")
 
     String getFFQ(@PathVariable("context") String context,
                   @PathVariable("areaId") Integer areaId,
@@ -120,7 +111,7 @@ class GridService {
     }
 
     // Visit
-    @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/visit", produces = "application/json")
+    @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/visit")
 
     String getEnumVisits(@PathVariable("context") String context, @PathVariable("householdId") String householdId) {
 
@@ -132,7 +123,7 @@ class GridService {
     }
 
     //Household Deaths
-    @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/death", produces = "application/json")
+    @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/death")
 
     String getDeaths(@PathVariable("context") String context, @PathVariable("householdId") String householdId) {
 
@@ -144,8 +135,7 @@ class GridService {
     }
 
     //Household Hospitalization
-    @RequestMapping(value = "/{context}/area/{areaId}/house/{houseId}/household/{householdId}/hosp", produces = "application/json")
-
+    @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/hosp")
     String getHospitalization(
             @PathVariable("context") String context, @PathVariable("householdId") String householdId) {
 
@@ -154,22 +144,13 @@ class GridService {
         return constructJsonResponse(sql, [householdId])
     }
 
-
-
     // Creating a Json from sql Query
     String constructJsonResponse(String sql, List params) {
-
-        List cols = dbAccess.columns(sql, params)
-        List filters = cols.collect { '#text_filter' }
-        List sortings = cols.collect { 'str' }
-
-        return dataModelUtil.constructJsonResponse(sql, params, filters.join(","), sortings.join(","));
-
+        dbAccess.rows(sql, params).toJson()
     }
 
     String createLink(Map contextData) {
 
-        Handlebars handlebars = new Handlebars()
         Gson gson = new Gson()
 
         Map entities = contextData.refs
@@ -180,16 +161,31 @@ class GridService {
         }
         String refs = entityList.join(",")
 
-        String template = ""
+        String text = ""
+
+        Map bindingData=contextData.clone()
+        bindingData << [columnName:columnName]
+        bindingData << [refs: refs]
+        if(!bindingData.alias)
+            bindingData << [alias: '']
+
         if (refs.isEmpty())
-            template = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},'})\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName"
+            text = '''CAST(CONCAT('<a ui-sref=\"$nextState({ $entityId}}:',$alias$entityId,'})\">',$alias$entityId,'</a>') AS CHAR) $columnName'''
+            //text = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},'})\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName"
         else
-            template = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},',$refs })\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName"
+            text = '''CAST(CONCAT('<a ui-sref=\"$nextState({ $entityId:',$alias$entityId,',$refs })\">',$alias$entityId,'</a>') AS CHAR) $columnName'''
+            //text = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},',$refs })\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName"
 
-        def compiledTemplate = handlebars.compileInline(template)
-        compiledTemplate.apply(contextData)
+        resolveTemplate(text,bindingData)
 
+    }
 
+    String resolveTemplate(String text, Map binding) {
+
+        def engine = new SimpleTemplateEngine()
+        engine.createTemplate(text)
+                .make(binding)
+                .toString()
     }
 
 

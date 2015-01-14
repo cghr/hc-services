@@ -13,6 +13,8 @@ INSERT INTO user(id,username,password,role) VALUES(36,'bipin','5f4dcc3b5aa765d61
 INSERT INTO user(id,username,password,role) VALUES(37,'panse','5f4dcc3b5aa765d61d8327deb882cf99','user');
 INSERT INTO user(id,username,password,role) VALUES(38,'demo','fe01ce2a7fbac8fafaed7c982a04e229','user');
 INSERT INTO area(areaId,name,landmark,pincode) VALUES(13,'Barshi Urban','power station','413401');
+INSERT INTO user(id,username,password,role) VALUES(21,'joshi','5f4dcc3b5aa765d61d8327deb882cf99','user');
+INSERT INTO user(id,username,password,role) VALUES(22,'rahul','5f4dcc3b5aa765d61d8327deb882cf99','user');
 INSERT INTO house(houseId,areaId) VALUES(3813001,13);
 INSERT INTO household(householdId,houseId,areaId) VALUES(381300101,3813001,13);
 INSERT INTO member(memberId,householdId,name,age_value,age_unit,gender) VALUES(38130010101,381300101,'maleMember','50','Years','Male');

@@ -1,12 +1,9 @@
 package org.cghr.hc.controller.grid
-
 import org.cghr.commons.db.DbAccess
-import org.cghr.dataViewModel.DataModelUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-
 /**
  * Created by ravitej on 8/4/14.
  */
@@ -15,8 +12,6 @@ import org.springframework.web.bind.annotation.RestController
 class ReportService {
 
 
-    @Autowired
-    DataModelUtil dataModelUtil
     @Autowired
     DbAccess dbAccess
 
@@ -31,12 +26,7 @@ class ReportService {
 
     String constructJsonResponse(String sql, List params) {
 
-        List cols = dbAccess.columns(sql, params)
-
-        List filters = cols.collect { '#text_filter' }
-        List sortings = cols.collect { 'str' }
-
-        return dataModelUtil.constructJsonResponse(sql, params, filters.join(","), sortings.join(","));
+        dbAccess.rows(sql,params).toJson()
 
     }
 

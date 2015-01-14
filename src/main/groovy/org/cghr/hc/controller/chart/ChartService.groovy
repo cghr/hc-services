@@ -1,10 +1,9 @@
 package org.cghr.hc.controller.chart
 
-import org.cghr.chart.ChartDataModel
+import org.cghr.commons.db.DbAccess
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-
 /**
  * Created by ravitej on 12/5/14.
  */
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 class ChartService {
 
     @Autowired
-    ChartDataModel chartDataModel
+    DbAccess dbAccess
 
     @RequestMapping(value = "/pendingDownloads", produces = "application/json")
     String getPendingDownloads() {
@@ -34,6 +33,7 @@ class ChartService {
     }
 
     String getChartModel(String sql, List params) {
-        chartDataModel.getChartDataModel(sql, params)
+
+        dbAccess.rows(sql,params).toJson()
     }
 }

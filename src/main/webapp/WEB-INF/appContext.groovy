@@ -1,16 +1,12 @@
 import groovy.sql.Sql
 import org.apache.tomcat.jdbc.pool.DataSource
-import org.cghr.chart.AngularChartDataModel
 import org.cghr.commons.db.CleanUp
 import org.cghr.commons.db.DbAccess
 import org.cghr.commons.db.DbStore
 import org.cghr.commons.file.FileSystemStore
 import org.cghr.dataSync.commons.SyncRunner
-import org.cghr.dataSync.providers.AgentProvider
-import org.cghr.dataSync.providers.AgentServiceProvider
+import org.cghr.dataSync.providers.*
 import org.cghr.dataSync.service.SyncUtil
-import org.cghr.dataViewModel.DataModelUtil
-import org.cghr.dataViewModel.DhtmlxGridModelTransformer
 import org.cghr.security.controller.Auth
 import org.cghr.security.controller.PostAuth
 import org.cghr.security.service.OnlineAuthService
@@ -19,10 +15,10 @@ import org.cghr.startupTasks.DbImport
 import org.cghr.startupTasks.DirCreator
 import org.cghr.startupTasks.MetaClassEnhancement
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
+import org.springframework.web.accept.ContentNegotiationManagerFactoryBean
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver
-
 
 beans {
     xmlns([context: 'http://www.springframework.org/schema/context'])
@@ -44,10 +40,12 @@ beans {
             bean('class': 'org.cghr.security.controller.AuthInterceptor')
         }
     }
-
-    contentNegotiatingViewResolver(ContentNegotiatingViewResolver) {
-        defaultContentType = "application/json"
-    }
+    contentNegotiationViewResolver(ContentNegotiatingViewResolver,{
+        mediaTypes=[json:'application/json']
+    })
+    contentNegotiationManager(ContentNegotiationManagerFactoryBean,{
+        defaultContentType="application/json"
+    })
     multipartResolver(CommonsMultipartResolver) {
         maxInMemorySize = 10240
         maxUploadSize = 1024000000
@@ -64,7 +62,7 @@ beans {
         bean.destroyMethod = 'close'
         driverClassName = 'org.h2.Driver'
         //url = 'jdbc:h2:tcp://localhost/~/hcDemo:9092;database_to_upper=false;mode=mysql'
-        url = 'jdbc:h2:~/hc;database_to_upper=false;mode=mysql;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE'
+        url = 'jdbc:h2:~/hcDemo;database_to_upper=false;mode=mysql;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE'
         username = 'sa'
         password = ''
         initialSize = 5
@@ -99,9 +97,6 @@ beans {
             ]])
     fileSystemStore(FileSystemStore, fileStoreFactory = fileStoreFactory, dbStore = dbStore)
 
-    //Todo Data Model for reports
-    transformer(DhtmlxGridModelTransformer, dbAccess = dbAccess)
-    dataModelUtil(DataModelUtil, transformer = transformer, dbAccess = dbAccess)
 
     //Todo Security
     serverAuthUrl(String, "http://localhost:8089/app/api/security/auth")
@@ -113,7 +108,8 @@ beans {
     restTemplate(RestTemplate, httpRequestFactory)
     onlineAuthService(OnlineAuthService, serverAuthUrl = serverAuthUrl, restTemplate = restTemplate)
     userService(UserService, dbAccess = dbAccess, dbStore = dbStore, onlineAuthService = onlineAuthService)
-    postAuth(PostAuth, userService = userService)
+    postAuth(PostAuth
+    )
     auth(Auth)
 
     //Startup Tasks
@@ -129,20 +125,32 @@ beans {
     //Todo DataSync
     String appName = 'hc'
     syncUtil(SyncUtil, dbAccess = dbAccess, restTemplate = restTemplate, baseIp = '192.168.0.', startNode = 100, endNode = 120, port = 8080, pathToCheck = 'api/sync/status/manager', appName = appName)
-    agentServiceProvider(AgentServiceProvider, dbAccess = dbAccess, dbStore = dbStore, restTemplate = restTemplate, changelogChunkSize = 20,
+
+
+    agentDownloadServiceProvider(AgentDownloadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, restTemplate = restTemplate,
             serverBaseUrl = serverBaseUrl,
             downloadInfoPath = 'api/sync/downloadInfo',
             downloadDataBatchPath = 'api/data/dataAccessBatchService/',
-            uploadPath = 'api/data/dataStoreBatchService',
-            awakeFileManagerPath = 'app/AwakeFileManager',
-            fileStoreFactory = fileStoreFactory,
-            userHome = userHome,
             syncUtil = syncUtil)
+
+    agentFileUploadServiceProvider(AgentFileUploadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, serverBaseUrl = serverBaseUrl,
+            fileStoreFactory = fileStoreFactory,
+            awakeFileManagerPath = 'app/AwakeFileManager')
+
+    agentMsgDistServiceProvider(AgentMsgDistServiceProvider, dbAccess = dbAccess, dbStore = dbStore)
+
+    agentUploadServiceProvider(AgentUploadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, restTemplate = restTemplate, changelogChunkSize = 20,
+            serverBaseUrl = serverBaseUrl,
+            uploadPath = 'api/data/dataStoreBatchService',
+            syncUtil = syncUtil)
+
+    agentServiceProvider(AgentServiceProvider, agentDownloadServiceProvider,
+            agentFileUploadServiceProvider,
+            agentMsgDistServiceProvider,
+            agentUploadServiceProvider)
     agentProvider(AgentProvider, agentServiceProvider = agentServiceProvider)
     syncRunner(SyncRunner, agentProvider = agentProvider)
 
-    //Chart Data Model Services
-    angularChartDataModel(AngularChartDataModel, dbAccess = dbAccess)
 
     // Maintenance Tasks
     cleanup(CleanUp, dbAccess = dbAccess, excludedEntities = 'user')
