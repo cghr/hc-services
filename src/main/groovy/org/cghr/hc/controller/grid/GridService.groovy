@@ -1,6 +1,4 @@
 package org.cghr.hc.controller.grid
-
-import com.google.gson.Gson
 import groovy.text.SimpleTemplateEngine
 import org.cghr.commons.db.DbAccess
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +19,7 @@ class GridService {
     String sql = ""
 
     @RequestMapping("/{context}/area")
-    String getAreas(@PathVariable("context") String context) {
+    Map[] getAreas(@PathVariable("context") String context) {
 
         Map data = [nextState: context + ".areaDetail.house", entityId: 'areaId', refs: [:]]
         String link = createLink(data)
@@ -31,7 +29,7 @@ class GridService {
     }
 
     @RequestMapping("/{context}/area/{areaId}/house")
-    String getHouses(@PathVariable("context") String context, @PathVariable("areaId") Integer areaId) {
+    Map[] getHouses(@PathVariable("context") String context, @PathVariable("areaId") Integer areaId) {
 
         String nextState = (context == 'enum') ? 'basicInf' : 'household'
         Map data = [nextState: context + ".houseDetail.$nextState", entityId: 'houseId', refs: [areaId: areaId]]
@@ -43,7 +41,7 @@ class GridService {
     }
 
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household")
-    String getHouseholds(
+    Map[] getHouseholds(
             @PathVariable("context") String context,
             @PathVariable("areaId") Integer areaId, @PathVariable("houseId") Integer houseId) {
 
@@ -70,9 +68,9 @@ class GridService {
 
     //Members
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/member")
-    String getMembers(@PathVariable("context") String context,
-                      @PathVariable("areaId") Integer areaId,
-                      @PathVariable("houseId") Integer houseId, @PathVariable("householdId") String householdId) {
+    Map[] getMembers(@PathVariable("context") String context,
+                     @PathVariable("areaId") Integer areaId,
+                     @PathVariable("houseId") Integer houseId, @PathVariable("householdId") String householdId) {
 
         Map data = [:]
         if (context != 'resamp')
@@ -99,9 +97,9 @@ class GridService {
     //FFQ
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/ffq")
 
-    String getFFQ(@PathVariable("context") String context,
-                  @PathVariable("areaId") Integer areaId,
-                  @PathVariable("houseId") Integer houseId, @PathVariable("householdId") String householdId) {
+    Map[] getFFQ(@PathVariable("context") String context,
+                 @PathVariable("areaId") Integer areaId,
+                 @PathVariable("houseId") Integer houseId, @PathVariable("householdId") String householdId) {
 
         Map data = [nextState: context + '.ffqDetail.general', entityId: 'memberId', refs: [areaId: areaId, houseId: houseId, householdId: householdId]]
         String link = createLink(data)
@@ -113,7 +111,7 @@ class GridService {
     // Visit
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/visit")
 
-    String getEnumVisits(@PathVariable("context") String context, @PathVariable("householdId") String householdId) {
+    Map[] getEnumVisits(@PathVariable("context") String context, @PathVariable("householdId") String householdId) {
 
         if (context == 'enum')
             sql = "select id,hhAvailability,timelog from enumVisit where householdId=? ".toString()
@@ -125,7 +123,7 @@ class GridService {
     //Household Deaths
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/death")
 
-    String getDeaths(@PathVariable("context") String context, @PathVariable("householdId") String householdId) {
+    Map[] getDeaths(@PathVariable("context") String context, @PathVariable("householdId") String householdId) {
 
         Map data = [nextState: '', entityId: '']
         String link = createLink(data)
@@ -136,7 +134,7 @@ class GridService {
 
     //Household Hospitalization
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/hosp")
-    String getHospitalization(
+    Map[] getHospitalization(
             @PathVariable("context") String context, @PathVariable("householdId") String householdId) {
 
         sql = "select name,reason from householdHosp where householdId=?".toString()
@@ -145,13 +143,12 @@ class GridService {
     }
 
     // Creating a Json from sql Query
-    String constructJsonResponse(String sql, List params) {
-        dbAccess.rows(sql, params).toJson()
+    Map[] constructJsonResponse(String sql, List params) {
+        dbAccess.rows(sql, params)
     }
 
     String createLink(Map contextData) {
 
-        Gson gson = new Gson()
 
         Map entities = contextData.refs
         String columnName = contextData.columnName == null ? 'id' : contextData.columnName
@@ -163,20 +160,20 @@ class GridService {
 
         String text = ""
 
-        Map bindingData=contextData.clone()
-        bindingData << [columnName:columnName]
+        Map bindingData = contextData.clone()
+        bindingData << [columnName: columnName]
         bindingData << [refs: refs]
-        if(!bindingData.alias)
+        if (!bindingData.alias)
             bindingData << [alias: '']
 
         if (refs.isEmpty())
-            text = '''CAST(CONCAT('<a ui-sref=\"$nextState({ $entityId}}:',$alias$entityId,'})\">',$alias$entityId,'</a>') AS CHAR) $columnName'''
-            //text = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},'})\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName"
+            text = '''CAST(CONCAT('<a ui-sref=\"$nextState({ $entityId:',$alias$entityId,'})\">',$alias$entityId,'</a>') AS CHAR) $columnName'''
+        //text = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},'})\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName"
         else
             text = '''CAST(CONCAT('<a ui-sref=\"$nextState({ $entityId:',$alias$entityId,',$refs })\">',$alias$entityId,'</a>') AS CHAR) $columnName'''
-            //text = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},',$refs })\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName"
+        //text = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},',$refs })\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName"
 
-        resolveTemplate(text,bindingData)
+        resolveTemplate(text, bindingData)
 
     }
 

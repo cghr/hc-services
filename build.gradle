@@ -40,7 +40,7 @@ configurations {
 }
 dependencies {
 
-    compile 'org.cghr:cghr-services:0.1-rc5'
+    compile 'org.cghr:cghr-services:0.1-rc7'
     compile 'com.h2database:h2:1.4.177'
 
     testCompile 'org.spockframework:spock-unitils:0.7-groovy-2.0'

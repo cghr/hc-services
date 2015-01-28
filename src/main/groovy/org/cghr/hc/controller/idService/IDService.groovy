@@ -3,7 +3,10 @@ package org.cghr.hc.controller.idService
 import org.cghr.commons.db.DbAccess
 import org.cghr.commons.db.DbStore
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.CookieValue
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 /**
  * Created by ravitej on 8/4/14.
@@ -28,15 +31,15 @@ class IDService {
     ]
 
 
-    @RequestMapping(value = "/area/{areaId}/house", method = RequestMethod.GET, produces = "application/json")
-    String getNextHouseId(@CookieValue("userid") String userid, @PathVariable("areaId") String areaId) {
+    @RequestMapping("/area/{areaId}/house")
+    Map getNextHouseId(@CookieValue("userid") String userid, @PathVariable("areaId") String areaId) {
 
         getNextId(areaId, userid, "house")
 
     }
 
-    @RequestMapping(value = "/area/{areaId}/house/{houseId}/household", produces = "application/json")
-    String getNextHouseholdId(@CookieValue("userid") String userid, @PathVariable("houseId") String houseId) {
+    @RequestMapping("/area/{areaId}/house/{houseId}/household")
+    Map getNextHouseholdId(@CookieValue("userid") String userid, @PathVariable("houseId") String houseId) {
 
 
         getNextId(houseId, userid, "household")
@@ -44,8 +47,8 @@ class IDService {
 
     }
 
-    @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/visit", produces = "application/json")
-    String getNextVisit(
+    @RequestMapping("/area/{areaId}/house/{houseId}/household/{householdId}/visit")
+    Map getNextVisit(
             @CookieValue("userid") String userid,
             @PathVariable("householdId") String householdId,
             @PathVariable("houseId") String houseId, @PathVariable("areaId") String areaId) {
@@ -58,32 +61,32 @@ class IDService {
 
     }
 
-    @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/member", produces = "application/json")
+    @RequestMapping("/area/{areaId}/house/{houseId}/household/{householdId}/member")
 
-    String getNextMember(@CookieValue("userid") String userid,
-                         @PathVariable("householdId") String householdId) {
+    Map getNextMember(@CookieValue("userid") String userid,
+                      @PathVariable("householdId") String householdId) {
 
         getNextId(householdId, userid, "member")
 
     }
 
-    @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/death", produces = "application/json")
-    String getNextDeath(@CookieValue("userid") String userid,
-                        @PathVariable("householdId") String householdId) {
+    @RequestMapping("/area/{areaId}/house/{houseId}/household/{householdId}/death")
+    Map getNextDeath(@CookieValue("userid") String userid,
+                     @PathVariable("householdId") String householdId) {
 
         getNextId(householdId, userid, "death")
 
     }
 
-    @RequestMapping(value = "/area/{areaId}/house/{houseId}/household/{householdId}/hosp", produces = "application/json")
-    String getNextHosp(@CookieValue("userid") String userid,
-                       @PathVariable("householdId") String householdId) {
+    @RequestMapping("/area/{areaId}/house/{houseId}/household/{householdId}/hosp")
+    Map getNextHosp(@CookieValue("userid") String userid,
+                    @PathVariable("householdId") String householdId) {
 
         getNextId(householdId, userid, "hosp")
     }
 
 
-    String getNextId(String refId, String userid, String context) {
+    Map getNextId(String refId, String userid, String context) {
 
         Map config = contextConfig.get(context)
         String sql = "SELECT MAX($config.id) id FROM $config.table WHERE $config.parentId=?"
@@ -91,12 +94,12 @@ class IDService {
 
     }
 
-    String generateNextId(String sql, String refId, String userid, String context) {
+    Map generateNextId(String sql, String refId, String userid, String context) {
 
         Map row = dbAccess.firstRow(sql, [refId])
         String nextId = resolveNextId(row, context, userid, refId)
 
-        return [id: nextId].toJson()
+        return [id: nextId]
 
     }
 

@@ -15,18 +15,18 @@ class ReportService {
     @Autowired
     DbAccess dbAccess
 
-    @RequestMapping(value = "/{reportId}", produces = "application/json")
-    String getReport(@PathVariable("reportId") String reportId) {
+    @RequestMapping("/{reportId}")
+    Map[] getReport(@PathVariable("reportId") String reportId) {
 
         Map reports = ["11": "select * from area",
                        "12": "select id,username,role from user"]
 
-        constructJsonResponse(reports."$reportId", [])
+        constructJsonResponse(reports[reportId])
     }
 
-    String constructJsonResponse(String sql, List params) {
+    Map[] constructJsonResponse(String sql, List params=[]) {
 
-        dbAccess.rows(sql,params).toJson()
+        dbAccess.rows(sql,params)
 
     }
 
