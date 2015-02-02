@@ -17,10 +17,14 @@ import org.cghr.security.service.UserService
 import org.cghr.startupTasks.DbImport
 import org.cghr.startupTasks.DirCreator
 import org.cghr.startupTasks.MetaClassEnhancement
-import org.cghr.test.db.DbTester
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
+import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.web.accept.ContentNegotiationManagerFactoryBean
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
+import org.springframework.web.servlet.view.ContentNegotiatingViewResolver
 
 beans {
     xmlns([context: 'http://www.springframework.org/schema/context'])
@@ -41,6 +45,11 @@ beans {
             bean('class': 'org.cghr.security.controller.AuthInterceptor')
         }
     }
+    jacksonMapperFactoryBean(Jackson2ObjectMapperFactoryBean)
+    httpMsgConverters(MappingJackson2HttpMessageConverter){
+        objectMapper= jacksonMapperFactoryBean
+    }
+
     multipartResolver(CommonsMultipartResolver) {
         maxInMemorySize = 10240
         maxUploadSize = 1024000000
@@ -88,7 +97,7 @@ beans {
     //dt(DbTester, dataSource = dataSource) //Todo Only For unit Testing
 
     //Todo Security
-    tokenCache(HashMap,[:])
+    tokenCache(HashMap, [:])
     serverAuthUrl(String, "http://localhost:8080/isha/api/security/auth")
     httpClientParams()
     httpRequestFactory(HttpComponentsClientHttpRequestFactory) {
@@ -97,12 +106,11 @@ beans {
     }
     restTemplate(RestTemplate, httpRequestFactory)
     onlineAuthService(OnlineAuthService, serverAuthUrl = serverAuthUrl, restTemplate = restTemplate)
-    userService(UserService, dbAccess = dbAccess, dbStore = dbStore, onlineAuthService = onlineAuthService,tokenCache=tokenCache)
+    userService(UserService, dbAccess = dbAccess, dbStore = dbStore, onlineAuthService = onlineAuthService, tokenCache = tokenCache)
     postAuth(PostAuth)
     auth(Auth)
     requestParser(RequestParser)
     authInterceptor(AuthInterceptor)
-
 
     //Todo Startup Tasks  - Metaclass Enhancement
     metaClassEnhancement(MetaClassEnhancement)

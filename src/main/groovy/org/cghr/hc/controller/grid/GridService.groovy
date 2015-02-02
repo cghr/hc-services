@@ -19,17 +19,18 @@ class GridService {
     String sql = ""
 
     @RequestMapping("/{context}/area")
-    Map[] getAreas(@PathVariable("context") String context) {
+    List getAreas(@PathVariable("context") String context) {
 
+        println 'returning list'
         Map data = [nextState: context + ".areaDetail.house", entityId: 'areaId', refs: [:]]
         String link = createLink(data)
         sql = "select $link,name,landmark,pincode from area".toString()
 
-        return constructJsonResponse(sql, [])
+        constructJsonResponse(sql,[])
     }
 
     @RequestMapping("/{context}/area/{areaId}/house")
-    Map[] getHouses(@PathVariable("context") String context, @PathVariable("areaId") Integer areaId) {
+    List getHouses(@PathVariable("context") String context, @PathVariable("areaId") Integer areaId) {
 
         String nextState = (context == 'enum') ? 'basicInf' : 'household'
         Map data = [nextState: context + ".houseDetail.$nextState", entityId: 'houseId', refs: [areaId: areaId]]
@@ -41,7 +42,7 @@ class GridService {
     }
 
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household")
-    Map[] getHouseholds(
+    List getHouseholds(
             @PathVariable("context") String context,
             @PathVariable("areaId") Integer areaId, @PathVariable("houseId") Integer houseId) {
 
@@ -68,7 +69,7 @@ class GridService {
 
     //Members
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/member")
-    Map[] getMembers(@PathVariable("context") String context,
+    List getMembers(@PathVariable("context") String context,
                      @PathVariable("areaId") Integer areaId,
                      @PathVariable("houseId") Integer houseId, @PathVariable("householdId") String householdId) {
 
@@ -97,7 +98,7 @@ class GridService {
     //FFQ
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/ffq")
 
-    Map[] getFFQ(@PathVariable("context") String context,
+    List getFFQ(@PathVariable("context") String context,
                  @PathVariable("areaId") Integer areaId,
                  @PathVariable("houseId") Integer houseId, @PathVariable("householdId") String householdId) {
 
@@ -111,7 +112,7 @@ class GridService {
     // Visit
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/visit")
 
-    Map[] getEnumVisits(@PathVariable("context") String context, @PathVariable("householdId") String householdId) {
+    List getEnumVisits(@PathVariable("context") String context, @PathVariable("householdId") String householdId) {
 
         if (context == 'enum')
             sql = "select id,hhAvailability,timelog from enumVisit where householdId=? ".toString()
@@ -123,7 +124,7 @@ class GridService {
     //Household Deaths
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/death")
 
-    Map[] getDeaths(@PathVariable("context") String context, @PathVariable("householdId") String householdId) {
+    List getDeaths(@PathVariable("context") String context, @PathVariable("householdId") String householdId) {
 
         Map data = [nextState: '', entityId: '']
         String link = createLink(data)
@@ -134,7 +135,7 @@ class GridService {
 
     //Household Hospitalization
     @RequestMapping("/{context}/area/{areaId}/house/{houseId}/household/{householdId}/hosp")
-    Map[] getHospitalization(
+    List getHospitalization(
             @PathVariable("context") String context, @PathVariable("householdId") String householdId) {
 
         sql = "select name,reason from householdHosp where householdId=?".toString()
@@ -143,7 +144,7 @@ class GridService {
     }
 
     // Creating a Json from sql Query
-    Map[] constructJsonResponse(String sql, List params) {
+    List constructJsonResponse(String sql, List params) {
         dbAccess.rows(sql, params)
     }
 

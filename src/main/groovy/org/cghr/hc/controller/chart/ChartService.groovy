@@ -16,25 +16,26 @@ class ChartService {
     DbAccess dbAccess
 
     @RequestMapping("/pendingDownloads")
-    Map[] getPendingDownloads() {
+    List getPendingDownloads() {
 
-        
+
         getChartModel("SELECT username,COUNT(*) downloads FROM outbox  a LEFT JOIN user b ON a.recipient=b.id WHERE dwnStatus is null GROUP BY recipient")
     }
 
     @RequestMapping("/todayProgressHHQ")
-    Map[] getTodayProgressHHQ() {
+    List getTodayProgressHHQ() {
 
         getChartModel("SELECT  username,COUNT(*)  completed FROM hcMember a LEFT JOIN user b ON a.surveyor=b.id WHERE a.timelog  > CURRENT_DATE() GROUP BY a.surveyor")
     }
 
     @RequestMapping("/todayProgressEnum")
-    Map[] getTotalProgressEnum() {
+    List getTotalProgressEnum() {
+
         getChartModel("SELECT  username,COUNT(*)  completed FROM member a LEFT JOIN user b ON a.surveyor=b.id WHERE  a.timelog > CURRENT_DATE() GROUP BY a.surveyor")
 
     }
 
-    Map[] getChartModel(String sql, List params = []) {
+    List getChartModel(String sql, List params = []) {
 
         dbAccess.rows(sql, params)
     }

@@ -52,7 +52,6 @@ dependencies {
     testCompile 'com.github.tomakehurst:wiremock:1.36'
     testCompile 'org.slf4j:slf4j-api:1.7.5'
 
-    //runtime 'ch.qos.logback:logback-classic:1.1.2'
 }
 
 

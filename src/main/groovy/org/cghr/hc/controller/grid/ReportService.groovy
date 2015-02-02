@@ -16,7 +16,7 @@ class ReportService {
     DbAccess dbAccess
 
     @RequestMapping("/{reportId}")
-    Map[] getReport(@PathVariable("reportId") String reportId) {
+    List getReport(@PathVariable("reportId") String reportId) {
 
         Map reports = ["11": "select * from area",
                        "12": "select id,username,role from user"]
@@ -24,7 +24,7 @@ class ReportService {
         constructJsonResponse(reports[reportId])
     }
 
-    Map[] constructJsonResponse(String sql, List params=[]) {
+    List constructJsonResponse(String sql, List params=[]) {
 
         dbAccess.rows(sql,params)
 
