@@ -41,22 +41,22 @@
     <!--Ends -->
 
     <!-- Awake File Manager -->
-    <!--<servlet>-->
-        <!--<servlet-name>AwakeFileManager</servlet-name>-->
-        <!--<servlet-class>org.awakefw.file.servlet.AwakeFileManager</servlet-class>-->
-        <!--<load-on-startup>2</load-on-startup>-->
+    <servlet>
+        <servlet-name>AwakeFileManager</servlet-name>
+        <servlet-class>org.awakefw.file.servlet.AwakeFileManager</servlet-class>
+        <load-on-startup>2</load-on-startup>
 
-        <!--<init-param>-->
-            <!--<param-name>awakeFileConfiguratorClassName</param-name>-->
-            <!--<param-value>org.cghr.awakeFile.CghrAwakeFileConfigurator</param-value>-->
-        <!--</init-param>-->
+        <init-param>
+            <param-name>awakeFileConfiguratorClassName</param-name>
+            <param-value>org.cghr.awakeFile.CghrAwakeFileConfigurator</param-value>
+        </init-param>
 
-    <!--</servlet>-->
+    </servlet>
 
-    <!--<servlet-mapping>-->
-        <!--<servlet-name>AwakeFileManager</servlet-name>-->
-        <!--<url-pattern>/AwakeFileManager</url-pattern>-->
-    <!--</servlet-mapping>-->
+    <servlet-mapping>
+        <servlet-name>AwakeFileManager</servlet-name>
+        <url-pattern>/AwakeFileManager</url-pattern>
+    </servlet-mapping>
 
 
     <welcome-file-list>

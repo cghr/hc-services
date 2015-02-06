@@ -21,8 +21,15 @@ class IDService {
     @Autowired
     DbStore dbStore
 
+    def randomHouseNo = {
+        Random r = new Random();
+        int Low = 1000;
+        int High = 2000;
+        int R = r.nextInt(High - Low) + Low;
+    };
+
     Map contextConfig = [
-            house    : [id: 'houseId', table: 'house', parentId: 'areaId', nextId: "001"],
+            house    : [id: 'houseId', table: 'house', parentId: 'areaId', nextId: randomHouseNo],
             household: [id: "householdId", table: 'household', parentId: 'houseId', nextId: "01"],
             member   : [id: 'memberId', table: 'member', parentId: 'householdId', nextId: "01"],
             hosp     : [id: 'id', table: 'householdHosp', parentId: 'householdId', nextId: "01"],
@@ -105,13 +112,26 @@ class IDService {
 
     String resolveNextId(Map row, String context, String userid, String refId) {
 
-        if (!row.id) {
-            String idPrefix = (context == 'house') ? (userid + refId) : refId
-            return idPrefix + (contextConfig."$context".nextId)
-        } else {
+        if (!row.id)
+            return (context == 'house') ? resolveNextIdForHouse(userid, refId) : resolveNextIdForRest(userid, refId, context)
+        //String idPrefix = (context == 'house') ? (userid + refId) : refId
+        //return idPrefix + (contextConfig."$context".nextId)
+        else {
             Long id = (row.id).toLong()
             return (++id).toString()
         }
+    }
+
+    String resolveNextIdForHouse(String userid, String refId) {
+
+        String idPrefix = userid + refId
+        int randomNo = contextConfig.house.nextId()
+        idPrefix + randomNo
+    }
+
+    String resolveNextIdForRest(String userid, String refId, String context) {
+
+        refId + (contextConfig[context].nextId)
     }
 
 

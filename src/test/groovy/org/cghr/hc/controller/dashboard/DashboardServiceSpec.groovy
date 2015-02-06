@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class DashboardServiceSpec extends Specification {
 
     @Autowired
-    DashboardService chartService
+    DashboardService dashboardService
     @Autowired
     Sql gSql
 
@@ -25,7 +25,7 @@ class DashboardServiceSpec extends Specification {
 
     def setup() {
 
-        mockMvc = MockMvcBuilders.standaloneSetup(chartService).build()
+        mockMvc = MockMvcBuilders.standaloneSetup(dashboardService).build()
         new DbSetup(gSql).setup()
     }
 

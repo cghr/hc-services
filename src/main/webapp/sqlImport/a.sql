@@ -18,11 +18,11 @@ CREATE TABLE filechangelog(id int primary key auto_increment,filename varchar(10
 DROP TABLE IF EXISTS area;
 CREATE TABLE area(areaId varchar(100) primary key,name varchar(100),landmark varchar(100),pincode varchar(100),districtId varchar(100));
 DROP TABLE IF EXISTS house;
-CREATE TABLE house(houseId varchar(100) primary key,areaId varchar(100),timelog timestamp default current_timestamp,houseNs varchar(100),gps_latitude varchar(100),gps_longitude varchar(100));
+CREATE TABLE house(houseId varchar(100) primary key,areaId varchar(100),timelog timestamp default current_timestamp,surveyor varchar(100),houseNs varchar(100),gps_latitude varchar(100),gps_longitude varchar(100));
 DROP TABLE IF EXISTS household;
-CREATE TABLE household(householdId varchar(100) primary key,houseId varchar(100),areaId varchar(100),timelog timestamp default current_timestamp,religion varchar(100),otherReligion varchar(100),caste varchar(100),otherCaste varchar(100),benefitGovtScheme varchar(100),otherGovtScheme varchar(100),totalMembers varchar(100));
+CREATE TABLE household(householdId varchar(100) primary key,houseId varchar(100),areaId varchar(100),timelog timestamp default current_timestamp,surveyor varchar(100),religion varchar(100),otherReligion varchar(100),caste varchar(100),otherCaste varchar(100),benefitGovtScheme varchar(100),otherGovtScheme varchar(100),totalMembers varchar(100));
 DROP TABLE IF EXISTS hhContact;
-CREATE TABLE hhContact(householdId varchar(100) primary key,nameStreet varchar(100),landmark varchar(100),mobile1 varchar(100),mobile2 varchar(100),secondPersonName varchar(100),houseNsNo2 varchar(100),nameStreet2 varchar(100),landmark2 varchar(100),secondPersonMobile varchar(100));
+CREATE TABLE hhContact(householdId varchar(100) primary key,timelog timestamp default current_timestamp,surveyor varchar(100),nameStreet varchar(100),landmark varchar(100),mobile1 varchar(100),mobile2 varchar(100),secondPersonName varchar(100),houseNsNo2 varchar(100),nameStreet2 varchar(100),landmark2 varchar(100),secondPersonMobile varchar(100));
 DROP TABLE IF EXISTS member;
 CREATE TABLE member(memberId varchar(100) primary key,householdId varchar(100),houseId varchar(100),areaId varchar(100),surveyor varchar(100),timelog timestamp default current_timestamp,name varchar(100),gender varchar(100),head varchar(100),age_value varchar(100),age_unit varchar(100));
 DROP TABLE IF EXISTS hcMember;
@@ -72,7 +72,7 @@ CREATE TABLE memberFmhDisease(memberId varchar(100) primary key,starttime varcha
 DROP TABLE IF EXISTS memberPhysicalActivities;
 CREATE TABLE memberPhysicalActivities(memberId varchar(100) primary key,starttime varchar(100),endtime timestamp default current_timestamp,workingHrsWeek varchar(100),transport2Work varchar(100),traveltime2Work varchar(100),farmingWorkChange varchar(100),noMonthsFarmLast varchar(100),typeWork varchar(100),noHoursFarm varchar(100),sweatFastHeartbeat varchar(100),noHoursFieldWeek varchar(100),otherJob varchar(100),activeOtherJob varchar(100),noHoursOtherJob varchar(100),farmingWorkChange1 varchar(100),noMonthsFarmLast1 varchar(100),typeWork1 varchar(100),noHoursFarm1 varchar(100),sweatFastHeartbeat1 varchar(100),noHoursFieldWeek1 varchar(100),otherJob1 varchar(100),activeOtherJob1 varchar(100),noHoursOtherJob1 varchar(100),servantHh varchar(100),servantParttime varchar(100),servantFulltime varchar(100),hhMaintanence varchar(100),cooking varchar(100),walking varchar(100),cycling varchar(100),takingcare varchar(100),carryingwater varchar(100),othersActivity varchar(100),othersSpecify varchar(100),othersActivityTime varchar(100),totalHrsSleep varchar(100),snoreSleep varchar(100),dayTimeNap varchar(100),hrsSleepAfterEat varchar(100),hrsWatchtvDay varchar(100),hrsWatchtvHoliday varchar(100),exercise varchar(100),sportExs1 varchar(100),durationSportExs1 varchar(100),noHrsSportExs1Wk varchar(100),sportExs2 varchar(100),durationSportExs2 varchar(100),noHrsSportExs2Wk varchar(100),sportsExsPast varchar(100),sportExs1Past varchar(100),ageStartSportExs1Past varchar(100),ageStopSportExs1 varchar(100),timeSportExs1WkPast varchar(100),sweatHeartbeatPhyAct varchar(100),weightChangeStatus varchar(100),effortReduceWt varchar(100),nowMale varchar(100),ageTwentyMale varchar(100),ageTenMale varchar(100),nowFemale varchar(100),ageTwentyFemale varchar(100),ageTenFemale varchar(100));
 DROP TABLE IF EXISTS ffqGeneral;
-CREATE TABLE ffqGeneral(memberId varchar(100) primary key,starttime varchar(100),endtime timestamp default current_timestamp,typeFood varchar(100),veg varchar(100),nonveg varchar(100),fastStatusLastWeek varchar(100),noDaysFast varchar(100),monday varchar(100),tuesday varchar(100),wednesday varchar(100),thursday varchar(100),friday varchar(100),saturday varchar(100),sunday varchar(100),fastDiet varchar(100),otherfastDiet varchar(100));
+CREATE TABLE ffqGeneral(memberId varchar(100) primary key,starttime varchar(100),endtime timestamp default current_timestamp,typeFood varchar(100),veg varchar(100),nonveg varchar(100),fastStatus varchar(100),noDaysFast varchar(100),monday varchar(100),tuesday varchar(100),wednesday varchar(100),thursday varchar(100),friday varchar(100),saturday varchar(100),sunday varchar(100),fastDiet varchar(100),otherfastDiet varchar(100));
 DROP TABLE IF EXISTS ffqBeverages;
 CREATE TABLE ffqBeverages(memberId varchar(100) primary key,starttime varchar(100),endtime timestamp default current_timestamp,milkCow_frequency varchar(100),milkCow_measure varchar(100),milkCow_unit varchar(100),tea_frequency varchar(100),tea_measure varchar(100),tea_unit varchar(100),coffee_frequency varchar(100),coffee_measure varchar(100),coffee_unit varchar(100));
 DROP TABLE IF EXISTS ffqCereals;
@@ -108,7 +108,7 @@ CREATE TABLE outbox(id int primary key auto_increment,datastore varchar(100),ref
 DROP TABLE IF EXISTS inbox;
 CREATE TABLE inbox(id int primary key auto_increment,datastore varchar(100),ref varchar(100),refId varchar(100),distList varchar(100),distStatus varchar(100),impStatus varchar(100));
 DROP TABLE IF EXISTS invitationCard;
-CREATE TABLE invitationCard(memberId varchar(100) primary key,phn varchar(100),rePhn varchar(100));
+CREATE TABLE invitationCard(memberId varchar(100) primary key,timelog timestamp default current_timestamp,surveyor varchar(100),phn varchar(100),rePhn varchar(100));
 DROP TABLE IF EXISTS resampAssign;
 CREATE TABLE resampAssign(memberId varchar(100) primary key,user varchar(100),timelog timestamp default current_timestamp);
 DROP TABLE IF EXISTS memberImage;

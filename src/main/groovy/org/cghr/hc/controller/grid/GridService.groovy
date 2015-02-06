@@ -21,7 +21,6 @@ class GridService {
     @RequestMapping("/{context}/area")
     List getAreas(@PathVariable("context") String context) {
 
-        println 'returning list'
         Map data = [nextState: context + ".areaDetail.house", entityId: 'areaId', refs: [:]]
         String link = createLink(data)
         sql = "select $link,name,landmark,pincode from area".toString()
@@ -87,7 +86,7 @@ class GridService {
 
         if (context == 'hc')
         //sql = "select $link,name,gender,age,CAST(CONCAT('<a ui-sref=\"cam({ memberId:',memberId,',areaId:$areaId,houseId:$houseId,householdId:$householdId,category:',',,'memberConsent,','imgSuffix:','consent})\">consent</a>') AS CHAR) consent from member where  householdId=? and age>29 and age<71".toString()
-            sql = "select $link,name,gender,CONCAT(age_value,age_unit) age,CASEWHEN(b.memberId IS NULL,'Pending','<i class=\"icon icon-ok\"></i>') status from member a left join invitationCard b on a.memberId=b.memberId where  householdId=? and age_value>29 and age_value<71 and age_unit='Years'".toString()
+            sql = "select $link,name,gender,CONCAT(age_value,age_unit) age,CASEWHEN(b.memberId IS NULL,'Pending','Completed') status from member a left join invitationCard b on a.memberId=b.memberId where  householdId=? and age_value>29 and age_value<71 and age_unit='Years'".toString()
         else if (context == 'resamp')
             sql = "select $link,name,gender,CONCAT(age_value,age_unit) age from member where  householdId=? and age_value>29 and age_value<71 and age_unit='Years'".toString()
         else

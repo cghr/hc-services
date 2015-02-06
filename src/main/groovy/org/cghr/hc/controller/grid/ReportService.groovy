@@ -1,9 +1,11 @@
 package org.cghr.hc.controller.grid
+
 import org.cghr.commons.db.DbAccess
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+
 /**
  * Created by ravitej on 8/4/14.
  */
@@ -18,15 +20,20 @@ class ReportService {
     @RequestMapping("/{reportId}")
     List getReport(@PathVariable("reportId") String reportId) {
 
-        Map reports = ["11": "select * from area",
-                       "12": "select id,username,role from user"]
+        Map reports = [
+                "11": "select * from area",
+                "12": "select * from house",
+                "13": "select * from household",
+                "14": "select * from member",
+                "21": "select * from hcMember"]
 
-        constructJsonResponse(reports[reportId])
+        constructJsonResponse(reports[reportId], [])
     }
 
-    List constructJsonResponse(String sql, List params=[]) {
+    List constructJsonResponse(String sql, List params = []) {
 
-        dbAccess.rows(sql,params)
+        //String forArea = sql + " where areaId=?"
+        dbAccess.rows(sql, params)
 
     }
 

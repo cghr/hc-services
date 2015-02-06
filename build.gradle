@@ -26,7 +26,6 @@ apply plugin: 'com.github.kt3k.coveralls'
 cobertura.coverageFormats = ['html', 'xml'] // coveralls plugin depends on xml format report
 sourceCompatibility = 1.7
 
-
 def springVersion = '4.1.1.RELEASE'
 repositories {
     mavenCentral()

@@ -1,5 +1,6 @@
 import groovy.sql.Sql
 import org.apache.tomcat.jdbc.pool.DataSource
+import org.cghr.chart.AngularChartModel
 import org.cghr.commons.db.CleanUp
 import org.cghr.commons.db.DbAccess
 import org.cghr.commons.db.DbStore
@@ -20,11 +21,8 @@ import org.cghr.startupTasks.MetaClassEnhancement
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
-import org.springframework.web.accept.ContentNegotiationManagerFactoryBean
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
-import org.springframework.web.servlet.view.ContentNegotiatingViewResolver
 
 beans {
     xmlns([context: 'http://www.springframework.org/schema/context'])
@@ -46,8 +44,8 @@ beans {
         }
     }
     jacksonMapperFactoryBean(Jackson2ObjectMapperFactoryBean)
-    httpMsgConverters(MappingJackson2HttpMessageConverter){
-        objectMapper= jacksonMapperFactoryBean
+    httpMsgConverters(MappingJackson2HttpMessageConverter) {
+        objectMapper = jacksonMapperFactoryBean
     }
 
     multipartResolver(CommonsMultipartResolver) {
@@ -101,10 +99,11 @@ beans {
     serverAuthUrl(String, "http://localhost:8080/isha/api/security/auth")
     httpClientParams()
     httpRequestFactory(HttpComponentsClientHttpRequestFactory) {
-        readTimeout = 3000
-        connectTimeout = 3000
+        readTimeout = 2000
+        connectTimeout = 2000
     }
     restTemplate(RestTemplate, httpRequestFactory)
+    //restTemplate(RestTemplate)
     onlineAuthService(OnlineAuthService, serverAuthUrl = serverAuthUrl, restTemplate = restTemplate)
     userService(UserService, dbAccess = dbAccess, dbStore = dbStore, onlineAuthService = onlineAuthService, tokenCache = tokenCache)
     postAuth(PostAuth)
@@ -123,7 +122,7 @@ beans {
 
     //Todo Data Synchronization
     String appName = 'hc'
-    syncUtil(SyncUtil, dbAccess = dbAccess, restTemplate = restTemplate, baseIp = '192.168.0.', startNode = 100, endNode = 120, port = 8080, pathToCheck = 'api/status/manager', appName = appName)
+    syncUtil(SyncUtil, dbAccess = dbAccess, restTemplate = restTemplate, baseIp = '192.168.0.', startNode = 100, endNode = 120, port = 8080, pathToCheck = 'api/sync/status/manager', appName = appName)
 
     agentDownloadServiceProvider(AgentDownloadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, restTemplate = restTemplate,
             serverBaseUrl = serverBaseUrl,//todo
@@ -133,12 +132,13 @@ beans {
 
     agentFileUploadServiceProvider(AgentFileUploadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, serverBaseUrl = 'http://demo1278634.mockable.io/',
             fileStoreFactory = fileStoreFactory,
-            awakeFileManagerPath = 'app/AwakeFileManager',
-            remoteFileRepo = 'hc/repo/images/')
+            awakeFileManagerPath = 'AwakeFileManager',
+            remoteFileRepo = 'hc/repo/images/',
+            syncUtil = syncUtil)
 
     agentMsgDistServiceProvider(AgentMsgDistServiceProvider, dbAccess = dbAccess, dbStore = dbStore)
 
-    agentUploadServiceProvider(AgentUploadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, restTemplate = restTemplate, changelogChunkSize = 20,
+    agentUploadServiceProvider(AgentUploadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, restTemplate = restTemplate, changelogChunkSize = 1,
             serverBaseUrl = serverBaseUrl,//todo
             uploadPath = 'api/entity',
             syncUtil = syncUtil)
@@ -154,12 +154,14 @@ beans {
     //Todo Maintenance Tasks
     cleanup(CleanUp, dbAccess = dbAccess, excludedEntities = "user,area")
 
-    String prodPath = new File('./assets/jsonSchema').getCanonicalPath()
-    devJsonSchemaPath(String, userHome + 'apps/<appName>/ui/src/assets/jsonSchema')
+    String prodPath = appPath + "/assets/jsonSchema"
+    devJsonSchemaPath(String, userHome + 'ngApps/<appName>/ui/src/assets/jsonSchema')
     prodJsonSchemaPath(String, prodPath)
 
     //Todo ipaddress pattern
     ipAddressPattern(String, "192.168")
     gpsSocketPort(Integer, 4444)
+
+    chartModel(AngularChartModel, dbAccess = dbAccess)
 
 }
