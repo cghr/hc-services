@@ -1,13 +1,14 @@
+INSERT INTO area(areaId,name,landmark,pincode) VALUES(999,'Demo','demo','99999');
 INSERT INTO user(id,username,password,role) VALUES(10,'kiran','5f4dcc3b5aa765d61d8327deb882cf99','manager');
 INSERT INTO user(id,username,password,role) VALUES(11,'harsha','5f4dcc3b5aa765d61d8327deb882cf99','user');
 INSERT INTO user(id,username,password,role) VALUES(12,'lingraj','5f4dcc3b5aa765d61d8327deb882cf99','user');
 INSERT INTO user(id,username,password,role) VALUES(13,'seeta','5f4dcc3b5aa765d61d8327deb882cf99','user');
 INSERT INTO user(id,username,password,role) VALUES(14,'tambe','5f4dcc3b5aa765d61d8327deb882cf99','user');
 INSERT INTO user(id,username,password,role) VALUES(15,'sujata','5f4dcc3b5aa765d61d8327deb882cf99','user');
-INSERT INTO user(id,username,password,role) VALUES(16,'demo','fe01ce2a7fbac8fafaed7c982a04e229','user');
-INSERT INTO user(id,username,password,role) VALUES(17,'joshi','5f4dcc3b5aa765d61d8327deb882cf99','user');
+INSERT INTO user(id,username,password,role) VALUES(16,'anuradha','fe01ce2a7fbac8fafaed7c982a04e229','user');
+INSERT INTO user(id,username,password,role) VALUES(17,'ganesh','5f4dcc3b5aa765d61d8327deb882cf99','user');
 INSERT INTO user(id,username,password,role) VALUES(18,'rahul','5f4dcc3b5aa765d61d8327deb882cf99','user');
-INSERT INTO area(areaId,name,landmark,pincode) VALUES(999,'Demo Only','demo only','99999');
+INSERT INTO user(id,username,password,role) VALUES(19,'bipin','5f4dcc3b5aa765d61d8327deb882cf99','user');
 INSERT INTO district(state,name) VALUES(34,'Nicobars');
 INSERT INTO district(state,name) VALUES(34,'North & middle Andamans');
 INSERT INTO district(state,name) VALUES(34,'South Andamans');

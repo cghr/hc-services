@@ -22,10 +22,11 @@ class ReportService {
 
         Map reports = [
                 "11": "select * from area",
-                "12": "select * from house",
-                "13": "select * from household",
-                "14": "select * from member",
-                "21": "select * from hcMember"]
+                "12": "select houseId,areaId,cast(timelog as varchar) timelog,surveyor,houseNs,gps_latitude,gps_longitude from house",
+                "13": "select householdId,houseId,areaId,cast(timelog as varchar) timelog,surveyor,religion,totalMembers from household",
+                "14": "select householdId,houseId,areaId,cast(timelog as varchar) timelog,surveyor,name,age_value,age_unit,gender,head from member",
+                "21": "select * from hcMember",
+                "31":"select id,username,role from user"]
 
         constructJsonResponse(reports[reportId], [])
     }

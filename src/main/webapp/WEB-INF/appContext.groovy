@@ -15,10 +15,8 @@ import org.cghr.security.controller.PostAuth
 import org.cghr.security.controller.RequestParser
 import org.cghr.security.service.OnlineAuthService
 import org.cghr.security.service.UserService
-import org.cghr.startupTasks.DbImport
-import org.cghr.startupTasks.DirCreator
-import org.cghr.startupTasks.MetaClassEnhancement
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
+import org.cghr.startupTasks.*
+import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.web.client.RestTemplate
@@ -96,14 +94,14 @@ beans {
 
     //Todo Security
     tokenCache(HashMap, [:])
-    serverAuthUrl(String, "http://localhost:8080/isha/api/security/auth")
+    serverAuthUrl(String, "http://barshi.vm-host.net:8080/isha/api/security/auth")
     httpClientParams()
-    httpRequestFactory(HttpComponentsClientHttpRequestFactory) {
-        readTimeout = 2000
-        connectTimeout = 2000
+    httpRequestFactory(SimpleClientHttpRequestFactory) {
+        readTimeout = 500
+        connectTimeout = 500
     }
-    restTemplate(RestTemplate, httpRequestFactory)
-    //restTemplate(RestTemplate)
+    restTemplateWithTimeout(RestTemplate, httpRequestFactory)
+    restTemplate(RestTemplate)
     onlineAuthService(OnlineAuthService, serverAuthUrl = serverAuthUrl, restTemplate = restTemplate)
     userService(UserService, dbAccess = dbAccess, dbStore = dbStore, onlineAuthService = onlineAuthService, tokenCache = tokenCache)
     postAuth(PostAuth)
@@ -122,7 +120,10 @@ beans {
 
     //Todo Data Synchronization
     String appName = 'hc'
-    syncUtil(SyncUtil, dbAccess = dbAccess, restTemplate = restTemplate, baseIp = '192.168.0.', startNode = 100, endNode = 120, port = 8080, pathToCheck = 'api/sync/status/manager', appName = appName)
+    syncUtil(SyncUtil, dbAccess = dbAccess, restTemplate = restTemplate, baseIp = '192.168.0.', startNode = 100, endNode = 120, port = 8080, pathToCheck = 'api/sync/status/manager',
+            appName = appName,
+            localSyncTimeout = 1500,
+            onlineSyncTimeout = 10 * 1000)
 
     agentDownloadServiceProvider(AgentDownloadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, restTemplate = restTemplate,
             serverBaseUrl = serverBaseUrl,//todo
@@ -130,7 +131,7 @@ beans {
             downloadDataBatchPath = 'api/entity/',
             syncUtil = syncUtil)
 
-    agentFileUploadServiceProvider(AgentFileUploadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, serverBaseUrl = 'http://demo1278634.mockable.io/',
+    agentFileUploadServiceProvider(AgentFileUploadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, serverBaseUrl = 'http://barshi.vm-host.net:8080/isha/',
             fileStoreFactory = fileStoreFactory,
             awakeFileManagerPath = 'AwakeFileManager',
             remoteFileRepo = 'hc/repo/images/',
@@ -138,7 +139,7 @@ beans {
 
     agentMsgDistServiceProvider(AgentMsgDistServiceProvider, dbAccess = dbAccess, dbStore = dbStore)
 
-    agentUploadServiceProvider(AgentUploadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, restTemplate = restTemplate, changelogChunkSize = 1,
+    agentUploadServiceProvider(AgentUploadServiceProvider, dbAccess = dbAccess, dbStore = dbStore, restTemplate = restTemplate, changelogChunkSize = 10,
             serverBaseUrl = serverBaseUrl,//todo
             uploadPath = 'api/entity',
             syncUtil = syncUtil)
@@ -152,7 +153,7 @@ beans {
     syncRunner(SyncRunner, agentProvider = agentProvider)
 
     //Todo Maintenance Tasks
-    cleanup(CleanUp, dbAccess = dbAccess, excludedEntities = "user,area")
+    cleanup(CleanUp, dbAccess = dbAccess, excludedEntities = "user,datachangelog,filechangelog")
 
     String prodPath = appPath + "/assets/jsonSchema"
     devJsonSchemaPath(String, userHome + 'ngApps/<appName>/ui/src/assets/jsonSchema')
@@ -163,5 +164,19 @@ beans {
     gpsSocketPort(Integer, 4444)
 
     chartModel(AngularChartModel, dbAccess = dbAccess)
+
+
+    //Todo Enable for changelog cleanup
+    changeLogCleanup(ChangeLogCleanup,dbAccess=dbAccess)
+
+
+
+    //Todo Enable Command Executor
+    cleanupCommand(HashMap, [
+            name: 'cleanup', refObj: cleanup, execFn: { it.cleanupTables() }
+    ])
+    commandConfig(ArrayList, [cleanupCommand])
+    commandExecutor(CommandExecutor, commandConfig = commandConfig,dbAccess=dbAccess)
+
 
 }

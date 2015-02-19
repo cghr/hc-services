@@ -96,7 +96,7 @@ class IDService {
     Map getNextId(String refId, String userid, String context) {
 
         Map config = contextConfig.get(context)
-        String sql = "SELECT MAX($config.id) id FROM $config.table WHERE $config.parentId=?"
+        String sql = "SELECT MAX($config.id) id FROM $config.table WHERE $config.parentId=? AND $config.id like '$userid%'"
         generateNextId(sql, refId, userid, context)
 
     }

@@ -23,7 +23,7 @@ class GridService {
 
         Map data = [nextState: context + ".areaDetail.house", entityId: 'areaId', refs: [:]]
         String link = createLink(data)
-        sql = "select $link,name,landmark,pincode from area".toString()
+        sql = "select $link,name,landmark,pincode,CONCAT('<a target=_new href=assets/maps/',areaId,'.jpg>Map</a>') map from area"
 
         constructJsonResponse(sql,[])
     }
@@ -32,11 +32,14 @@ class GridService {
     List getHouses(@PathVariable("context") String context, @PathVariable("areaId") Integer areaId) {
 
         String nextState = (context == 'enum') ? 'basicInf' : 'household'
-        Map data = [nextState: context + ".houseDetail.$nextState", entityId: 'houseId', refs: [areaId: areaId]]
+        Map data = [nextState: context + ".houseDetail.$nextState", entityId: 'houseId', refs: [areaId: areaId],alias: 'a.']
 
         String link = createLink(data)
-        sql = "select $link,houseNs,gps_latitude,gps_longitude from house where areaId=?".toString()
+        //sql = "select $link,houseNs,b.households,gps_latitude,gps_longitude from house a left join(select   houseId,count(*)  households  from household group by houseId) b on a.houseId=b.houseId where a.areaId=?".toString()
 
+        sql="SELECT $link,houseNs,b.flag,gps_latitude,gps_longitude FROM house a LEFT JOIN " +
+                "(SELECT houseId,CASEWHEN(hhAvailability LIKE '%temporarily locked%','Revisit','')  flag FROM  (SELECT  p.houseId,GROUP_CONCAT(p.hhAvailability) hhAvailability  FROM enumVisit p " +
+                "LEFT JOIN enumVisit q ON p.householdId=q.householdId AND p.id<q.id WHERE q.id IS NULL  GROUP BY p.houseId ) tab1 ) b ON a.houseId=b.houseId  WHERE a.areaId=?"
         return constructJsonResponse(sql, [areaId])
     }
 
@@ -55,7 +58,8 @@ class GridService {
         Map row = dbAccess.firstRow("select hhAvailability from enumVisit ORDER by id DESC LIMIT 1")
 
         if (context == 'enum')
-            sql = "SELECT  $link,totalMembers totalMembers,CASEWHEN(b.hhAvailability='Door temporarily locked','Revisit',b.hhAvailability) flag  FROM household a left JOIN (SELECT m1.householdId,m1.hhAvailability FROM enumVisit m1 LEFT JOIN enumVisit m2 ON (m1.householdId = m2.householdId AND m1.id < m2.id) WHERE m2.id IS NULL)b ON a.householdId=b.householdId where houseId=?".toString()
+            //sql = "SELECT  $link,totalMembers totalMembers,CASEWHEN(b.hhAvailability='Door temporarily locked','Revisit',b.hhAvailability) flag  FROM household a left JOIN (SELECT m1.householdId,m1.hhAvailability FROM enumVisit m1 LEFT JOIN enumVisit m2 ON (m1.householdId = m2.householdId AND m1.id < m2.id) WHERE m2.id IS NULL)b ON a.householdId=b.householdId where houseId=?".toString()
+            sql="SELECT  $link,totalMembers totalMembers,head,CASEWHEN(b.hhAvailability='Door temporarily locked','Revisit',b.hhAvailability) flag  FROM household a left JOIN (SELECT m1.householdId,m1.hhAvailability FROM enumVisit m1 LEFT JOIN enumVisit m2 ON (m1.householdId = m2.householdId AND m1.id < m2.id) WHERE m2.id IS NULL)b ON a.householdId=b.householdId left join (select name head,householdId from member where head='Yes' ) c on a.householdId=c.householdId where houseId=?"
 
         else if (context == 'hc')
             sql = "SELECT  $link,totalMembers totalMembers,b.hhVisit flag  FROM household a left JOIN (SELECT m1.householdId,m1.hhVisit FROM hcVisit m1 LEFT JOIN hcVisit m2 ON (m1.householdId = m2.householdId AND m1.id < m2.id) WHERE m2.id IS NULL)b ON a.householdId=b.householdId where houseId=?".toString()
@@ -73,7 +77,7 @@ class GridService {
                      @PathVariable("houseId") Integer houseId, @PathVariable("householdId") String householdId) {
 
         Map data = [:]
-        if (context != 'resamp')
+        if (context == 'hc')
             data = [nextState: context + '.memberDetail.bp1', entityId: 'memberId', refs: [areaId: areaId, houseId: houseId, householdId: householdId], alias: 'a.']
         else
             data = [nextState: context + '.memberDetail.basicInf', entityId: 'memberId', refs: [areaId: areaId, houseId: houseId, householdId: householdId]]
@@ -88,9 +92,9 @@ class GridService {
         //sql = "select $link,name,gender,age,CAST(CONCAT('<a ui-sref=\"cam({ memberId:',memberId,',areaId:$areaId,houseId:$houseId,householdId:$householdId,category:',',,'memberConsent,','imgSuffix:','consent})\">consent</a>') AS CHAR) consent from member where  householdId=? and age>29 and age<71".toString()
             sql = "select $link,name,gender,CONCAT(age_value,age_unit) age,CASEWHEN(b.memberId IS NULL,'Pending','Completed') status from member a left join invitationCard b on a.memberId=b.memberId where  householdId=? and age_value>29 and age_value<71 and age_unit='Years'".toString()
         else if (context == 'resamp')
-            sql = "select $link,name,gender,CONCAT(age_value,age_unit) age from member where  householdId=? and age_value>29 and age_value<71 and age_unit='Years'".toString()
+            sql = "select $link,name,gender,CONCAT(age_value,age_unit) age from member a where  householdId=? and age_value>29 and age_value<71 and age_unit='Years'".toString()
         else
-            sql = "select memberId,name,gender,CONCAT(age_value,age_unit) age from member where  householdId=?".toString()
+            sql = "select $link,name,gender,CONCAT(age_value,age_unit) age from member a where  householdId=?".toString()
 
         return constructJsonResponse(sql, [householdId])
     }
@@ -167,10 +171,10 @@ class GridService {
             bindingData << [alias: '']
 
         if (refs.isEmpty())
-            text = '''CAST(CONCAT('<a ui-sref=\"$nextState({ $entityId:',$alias$entityId,'})\">',$alias$entityId,'</a>') AS CHAR) $columnName'''
+            text = '''CAST(CONCAT('<a ui-sref=\"$nextState({ $entityId:',$alias$entityId,'})\">',$alias$entityId,'</a>') AS VARCHAR) $columnName'''
         //text = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},'})\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName"
         else
-            text = '''CAST(CONCAT('<a ui-sref=\"$nextState({ $entityId:',$alias$entityId,',$refs })\">',$alias$entityId,'</a>') AS CHAR) $columnName'''
+            text = '''CAST(CONCAT('<a ui-sref=\"$nextState({ $entityId:',$alias$entityId,',$refs })\">',$alias$entityId,'</a>') AS VARCHAR) $columnName'''
         //text = "CAST(CONCAT('<a ui-sref=\"{{nextState}}({ {{entityId}}:',{{alias}}{{entityId}},',$refs })\">',{{alias}}{{entityId}},'</a>') AS CHAR) $columnName"
 
         resolveTemplate(text, bindingData)
